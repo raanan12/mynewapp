@@ -4,7 +4,6 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { fontSize, spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { formatDate } from '@/utils/format';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
@@ -13,9 +12,7 @@ export default function HomeScreen() {
     <Screen>
       <View style={styles.container}>
         <Text style={[styles.title, { color: colors.text }]}>MyNewApp</Text>
-        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-          Edit src/app/index.tsx to change this screen. Today is {formatDate(new Date())}.
-        </Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>שלום אמיתי</Text>
         <Button title="Get started" onPress={() => {}} style={styles.action} />
       </View>
     </Screen>
