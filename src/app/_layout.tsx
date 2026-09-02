@@ -53,6 +53,10 @@ export default function RootLayout() {
               name="add-card"
               options={{ presentation: 'modal', headerShown: true, title: 'הוספת כרטיס' }}
             />
+            <Stack.Screen
+              name="terms"
+              options={{ presentation: 'modal', headerShown: true, title: 'תקנון ותנאי שימוש' }}
+            />
           </Stack>
           <StatusBar style={isDark ? 'light' : 'dark'} />
         </ThemeProvider>

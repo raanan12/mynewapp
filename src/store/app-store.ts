@@ -17,8 +17,17 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 
-import { defaultCategories, defaultCoinAmounts } from '@/constants/content';
-import type { CardToken, Category, CategoryId, Donation, Settings, Streak } from '@/types';
+import { defaultApprovals, defaultCategories, defaultCharities, defaultCoinAmounts } from '@/constants/content';
+import type {
+  CardToken,
+  Category,
+  CategoryId,
+  Charity,
+  Donation,
+  RabbinicalApproval,
+  Settings,
+  Streak,
+} from '@/types';
 import { toDateKey } from '@/utils/format';
 
 export type DonationOutcome =
@@ -41,11 +50,17 @@ type AppState = {
   donations: Donation[];
   settings: Settings;
   contact: ContactDetails;
-  /** Categories and coin denominations, editable from the admin site - these
-   *  start as the bundled defaults and are overridden once Supabase answers
-   *  (see `pullGivingConfig` in src/services/sync.ts). */
+  /** Categories, coin denominations, charities and approvals - all editable
+   *  from the admin site. These start as the bundled defaults and are
+   *  overridden once Supabase answers (see `pullContent` in src/services/sync.ts). */
   categories: Category[];
   coinAmounts: number[];
+  charities: Charity[];
+  approvals: RabbinicalApproval[];
+  /** Legal record of terms-of-service acceptance - null until the user
+   *  explicitly accepts on the terms screen, which gates card entry. */
+  termsAcceptedAt: string | null;
+  termsVersion: string | null;
   /** Set once the intro/onboarding has been seen. */
   hasOnboarded: boolean;
 
@@ -55,7 +70,13 @@ type AppState = {
   attachReceipt: (donationId: string, receiptUrl: string) => void;
   /** Dedication is entered after the coin drops so the flow stays fast. */
   attachDedication: (donationId: string, dedication: string) => void;
-  setGivingConfig: (config: { categories: Category[]; coinAmounts: number[] }) => void;
+  setContent: (content: {
+    categories: Category[];
+    coinAmounts: number[];
+    charities: Charity[];
+    approvals: RabbinicalApproval[];
+  }) => void;
+  acceptTerms: (version: string) => void;
   markOnboarded: () => void;
   reset: () => void;
 
@@ -65,6 +86,8 @@ type AppState = {
     card: CardToken | null;
     settings?: Partial<Settings>;
     contact?: ContactDetails;
+    termsAcceptedAt?: string | null;
+    termsVersion?: string | null;
   }) => void;
   /** Merge donations pulled from Supabase - every donation is server-created,
    *  so this is the only way the list grows besides `recordExternalDonation`. */
@@ -94,6 +117,10 @@ export const useAppStore = create<AppState>()(
       contact: emptyContact,
       categories: [...defaultCategories],
       coinAmounts: [...defaultCoinAmounts],
+      charities: [...defaultCharities],
+      approvals: [...defaultApprovals],
+      termsAcceptedAt: null,
+      termsVersion: null,
       hasOnboarded: false,
 
       saveCard: (card) => set({ card }),
@@ -118,7 +145,10 @@ export const useAppStore = create<AppState>()(
           ),
         })),
 
-      setGivingConfig: ({ categories, coinAmounts }) => set({ categories, coinAmounts }),
+      setContent: ({ categories, coinAmounts, charities, approvals }) =>
+        set({ categories, coinAmounts, charities, approvals }),
+
+      acceptTerms: (version) => set({ termsAcceptedAt: new Date().toISOString(), termsVersion: version }),
 
       markOnboarded: () => set({ hasOnboarded: true }),
 
@@ -131,15 +161,25 @@ export const useAppStore = create<AppState>()(
           contact: emptyContact,
           categories: [...defaultCategories],
           coinAmounts: [...defaultCoinAmounts],
+          charities: [...defaultCharities],
+          approvals: [...defaultApprovals],
+          termsAcceptedAt: null,
+          termsVersion: null,
           hasOnboarded: false,
         }),
 
-      hydrateFromRemote: ({ streak, card, settings, contact }) =>
+      hydrateFromRemote: ({ streak, card, settings, contact, termsAcceptedAt, termsVersion }) =>
         set((state) => ({
           streak,
           card,
           settings: settings ? { ...state.settings, ...settings } : state.settings,
           contact: contact ?? state.contact,
+          // Additive, not authoritative: once accepted locally, a server read
+          // that hasn't caught up yet (or a transient null) must never
+          // un-accept the user - the accept action always writes the server
+          // row before setting this locally, so the two converge either way.
+          termsAcceptedAt: state.termsAcceptedAt ?? termsAcceptedAt ?? null,
+          termsVersion: state.termsVersion ?? termsVersion ?? null,
         })),
 
       setContact: (contact) => set({ contact }),
@@ -222,3 +262,7 @@ export function categoryLabel(id: CategoryId): string {
 export const useCategories = () => useAppStore((state) => state.categories);
 
 export const useCoinAmounts = () => useAppStore((state) => state.coinAmounts);
+
+export const useCharities = () => useAppStore((state) => state.charities);
+
+export const useApprovals = () => useAppStore((state) => state.approvals);

@@ -14,7 +14,7 @@ export type Category = {
   /** Hebrew label shown in the UI. */
   label: string;
   description: string;
-  /** Ionicons glyph name. */
+  /** Icon key resolved by `resolveCategoryIcon` to a Lucide component. */
   icon: string;
 };
 

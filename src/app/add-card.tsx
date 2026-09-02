@@ -1,12 +1,13 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Lock, ShieldCheck } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isSupabaseConfigured } from '@/config/env';
+import { TERMS_VERSION } from '@/constants/terms';
 import { fontSize, radius, spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { errorFeedback, successFeedback } from '@/services/feedback';
@@ -39,9 +40,19 @@ export default function AddCardScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const saveCard = useAppStore((state) => state.saveCard);
+  const hasAcceptedTerms = useAppStore(
+    (state) => Boolean(state.termsAcceptedAt) && state.termsVersion === TERMS_VERSION
+  );
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Gate: card entry is not allowed before accepting the current terms.
+  // Pushed (not replaced) so accepting can `router.back()` straight into
+  // this screen instead of wherever the user was before it.
+  useEffect(() => {
+    if (!hasAcceptedTerms) router.push('/terms');
+  }, [hasAcceptedTerms, router]);
 
   const [number, setNumber] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -88,6 +99,10 @@ export default function AddCardScreen() {
     }
   }
 
+  if (!hasAcceptedTerms) {
+    return <Screen>{null}</Screen>;
+  }
+
   const inputStyle = [
     styles.input,
     { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface },
@@ -97,7 +112,7 @@ export default function AddCardScreen() {
     return (
       <Screen>
         <View style={styles.hosted}>
-          <Ionicons name="shield-checkmark-outline" size={54} color={colors.accent} />
+          <ShieldCheck size={54} color={colors.accent} strokeWidth={1.5} />
 
           <Text style={[styles.hostedTitle, { color: colors.text }]}>הזנת כרטיס מאובטחת</Text>
           <Text style={[styles.hostedBody, { color: colors.textMuted }]}>
@@ -146,7 +161,7 @@ export default function AddCardScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Card>
             <View style={styles.secureRow}>
-              <Ionicons name="lock-closed-outline" size={18} color={colors.success} />
+              <Lock size={18} color={colors.success} strokeWidth={1.75} />
               <Text style={[styles.secureText, { color: colors.textMuted }]}>
                 הפרטים נשלחים ישירות לסליקה ומוחלפים בטוקן מאובטח. מספר הכרטיס אינו נשמר במכשיר ולא
                 בשרתי האפליקציה.

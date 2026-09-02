@@ -110,7 +110,7 @@ export function CategoriesEditor() {
             />
           </div>
           <div>
-            <label>אייקון (Ionicons)</label>
+            <label>אייקון (heart / medkit / book / home / star / gift / people / school / restaurant)</label>
             <input value={draft.icon} onChange={(event) => setDraft({ ...draft, icon: event.target.value })} />
           </div>
         </div>

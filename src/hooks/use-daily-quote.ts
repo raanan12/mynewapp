@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { quotes as localQuotes } from '@/constants/content';
+import { defaultQuotes as localQuotes } from '@/constants/content';
 import { supabase } from '@/lib/supabase';
 import type { Quote } from '@/types';
 import { toDateKey } from '@/utils/format';

@@ -39,6 +39,9 @@ export type ProfileRow = {
   auto_reload_threshold: number;
   auto_reload_amount: number;
   is_admin: boolean;
+  /** Legal record of terms-of-service acceptance - gates card entry. */
+  terms_accepted_at: string | null;
+  terms_version: string | null;
   created_at: string;
   last_seen_at: string;
 };

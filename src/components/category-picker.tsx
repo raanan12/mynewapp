@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { fontSize, radius, spacing } from '@/constants/theme';
+import { fontSize, radius, shadow, spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { resolveCategoryIcon } from '@/lib/category-icon';
 import { tapFeedback } from '@/services/feedback';
 import { useCategories } from '@/store/app-store';
 import type { CategoryId } from '@/types';
@@ -12,7 +12,10 @@ type CategoryPickerProps = {
   onChange: (id: CategoryId) => void;
 };
 
-/** Horizontal chips - the donation target is picked before the coin drops. */
+const TILE_SIZE = 72;
+
+/** Square tiles - icon on top, label below - so every category stays the
+ *  same proportions regardless of how long its Hebrew label is. */
 export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
   const { colors } = useTheme();
   const categories = useCategories();
@@ -24,6 +27,7 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
       contentContainerStyle={styles.row}>
       {categories.map((category) => {
         const selected = category.id === value;
+        const Icon = resolveCategoryIcon(category.icon);
 
         return (
           <Pressable
@@ -35,21 +39,24 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
               onChange(category.id);
             }}
             style={({ pressed }) => [
-              styles.chip,
+              styles.tile,
+              selected && shadow.card,
               {
-                backgroundColor: selected ? colors.primary : colors.surface,
-                borderColor: selected ? colors.primary : colors.border,
+                backgroundColor: selected ? colors.accent : colors.surface,
+                borderColor: selected ? colors.accent : colors.border,
                 opacity: pressed ? 0.85 : 1,
               },
             ]}>
-            <Ionicons
-              name={category.icon as keyof typeof Ionicons.glyphMap}
-              size={16}
-              color={selected ? colors.onPrimary : colors.textMuted}
-            />
+            <View
+              style={[
+                styles.iconWrap,
+                { backgroundColor: selected ? 'rgba(255,255,255,0.2)' : colors.surfaceAlt },
+              ]}>
+              <Icon size={20} color={selected ? colors.onAccent : colors.textMuted} strokeWidth={1.75} />
+            </View>
             <Text
-              style={[styles.label, { color: selected ? colors.onPrimary : colors.text }]}
-              numberOfLines={1}>
+              style={[styles.label, { color: selected ? colors.onAccent : colors.text }]}
+              numberOfLines={2}>
               {category.label}
             </Text>
           </Pressable>
@@ -61,21 +68,29 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
   },
-  chip: {
-    flexDirection: 'row',
+  tile: {
+    width: TILE_SIZE,
     alignItems: 'center',
-    gap: spacing.xs + 2,
+    justifyContent: 'center',
+    gap: spacing.xs,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
   },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   label: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.xs,
     fontWeight: '700',
+    textAlign: 'center',
   },
 });

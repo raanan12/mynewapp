@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from 'react-native';
 
-import { radius, spacing, fontSize } from '@/constants/theme';
+import { fontSize, radius, shadow, spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { tapFeedback } from '@/services/feedback';
 
@@ -28,7 +28,7 @@ export function Button({
   const background = {
     primary: colors.primary,
     gold: colors.accent,
-    secondary: colors.surfaceAlt,
+    secondary: colors.surface,
     ghost: 'transparent',
   }[variant];
 
@@ -36,8 +36,10 @@ export function Button({
     primary: colors.onPrimary,
     gold: colors.onAccent,
     secondary: colors.text,
-    ghost: colors.text,
+    ghost: colors.textMuted,
   }[variant];
+
+  const elevated = variant === 'primary' || variant === 'gold';
 
   return (
     <Pressable
@@ -50,10 +52,12 @@ export function Button({
       }}
       style={(state) => [
         styles.base,
+        elevated && shadow.card,
         {
           backgroundColor: background,
-          borderColor: variant === 'ghost' ? colors.border : background,
+          borderColor: variant === 'secondary' ? colors.border : background,
           opacity: isDisabled ? 0.45 : state.pressed ? 0.85 : 1,
+          transform: [{ scale: state.pressed && !isDisabled ? 0.97 : 1 }],
         },
         typeof style === 'function' ? style(state) : style,
       ]}

@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Mail } from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -57,7 +57,7 @@ export function ReceiptDetailsCard() {
   return (
     <Card>
       <View style={styles.header}>
-        <Ionicons name="mail-outline" size={18} color={colors.textMuted} />
+        <Mail size={18} color={colors.textMuted} strokeWidth={1.75} />
         <Text style={[styles.title, { color: colors.text }]}>פרטי קבלה</Text>
       </View>
       <Text style={[styles.body, { color: colors.textMuted }]}>

@@ -1,15 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { Award, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
-import { approvals, charities } from '@/constants/content';
-import { fontSize, palette, radius, spacing } from '@/constants/theme';
+import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { association } from '@/services/receipts';
-import { useCategories, useCategoryTotals, useTotals } from '@/store/app-store';
+import { useApprovals, useCategories, useCategoryTotals, useCharities, useTotals } from '@/store/app-store';
 import type { RabbinicalApproval } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -17,6 +16,8 @@ import { formatCurrency } from '@/utils/format';
 export default function TrustScreen() {
   const { colors } = useTheme();
   const categories = useCategories();
+  const charities = useCharities();
+  const approvals = useApprovals();
   const byCategory = useCategoryTotals();
   const totals = useTotals();
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
@@ -28,7 +29,7 @@ export default function TrustScreen() {
 
         <Card elevated>
           <View style={styles.badgeRow}>
-            <Ionicons name="shield-checkmark" size={20} color={palette.gold} />
+            <ShieldCheck size={20} color={palette.gold} strokeWidth={1.75} />
             <Text style={[styles.badgeText, { color: colors.text }]}>{association.clause46}</Text>
           </View>
           <Text style={[styles.body, { color: colors.textMuted }]}>
@@ -105,7 +106,7 @@ export default function TrustScreen() {
                       {charity.allocation}%
                     </Text>
                     {charity.hasClause46 ? (
-                      <Ionicons name="ribbon-outline" size={14} color={colors.success} />
+                      <Award size={14} color={colors.success} strokeWidth={1.75} />
                     ) : null}
                   </View>
                 </View>
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: TAB_BAR_CLEARANCE,
   },
   screenTitle: {
     fontSize: fontSize.xl,
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   },
   previewBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(5,8,15,0.93)',
+    backgroundColor: 'rgba(28,25,23,0.94)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,

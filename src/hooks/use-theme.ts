@@ -1,5 +1,3 @@
-import { useColorScheme } from 'react-native';
-
 import { colors, type ColorScheme, type ThemeColors } from '@/constants/theme';
 
 export type Theme = {
@@ -8,13 +6,15 @@ export type Theme = {
   isDark: boolean;
 };
 
-/** Resolves the active color scheme into the token set components should use. */
+/**
+ * The "Light Minimalist Luxury" design is a single deliberate light palette,
+ * not a light/dark pair - so this ignores the system color scheme rather
+ * than switching to a mismatched dark theme.
+ */
 export function useTheme(): Theme {
-  const scheme: ColorScheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-
   return {
-    scheme,
-    colors: colors[scheme],
-    isDark: scheme === 'dark',
+    scheme: 'light',
+    colors: colors.light,
+    isDark: false,
   };
 }

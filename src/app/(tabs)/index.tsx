@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { AlertCircle, CreditCard, Plus } from 'lucide-react-native';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { CategoryPicker } from '@/components/category-picker';
+import { ChargeFailedModal } from '@/components/charge-failed-modal';
 import { CustomAmountModal } from '@/components/custom-amount-modal';
 import { DonationModal } from '@/components/donation-modal';
 import { DraggableCoin } from '@/components/draggable-coin';
@@ -11,7 +12,7 @@ import { ProcessingBanner } from '@/components/processing-banner';
 import { Screen } from '@/components/screen';
 import { StreakBadge } from '@/components/streak-badge';
 import { TzedakahBox, type TzedakahBoxHandle } from '@/components/tzedakah-box';
-import { fontSize, radius, spacing } from '@/constants/theme';
+import { fontSize, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { errorFeedback, playCoinSound, successFeedback } from '@/services/feedback';
 import { shareReceipt } from '@/services/receipts';
@@ -36,8 +37,10 @@ export default function GivingScreen() {
   const [category, setCategory] = useState<CategoryId>('families');
   const [lastDonation, setLastDonation] = useState<Donation | null>(null);
   const [customOpen, setCustomOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
+  const [chargeError, setChargeError] = useState<string | null>(null);
   const [charging, setCharging] = useState(false);
+  const [lastAmount, setLastAmount] = useState<number | null>(null);
 
   // Coin flight geometry, filled in by onLayout.
   const [boxTop, setBoxTop] = useState(0);
@@ -72,7 +75,8 @@ export default function GivingScreen() {
     async (amount: number) => {
       if (charging) return;
 
-      setError(null);
+      setHint(null);
+      setLastAmount(amount);
       setCharging(true);
       boxRef.current?.receiveCoin();
       void playCoinSound();
@@ -84,11 +88,9 @@ export default function GivingScreen() {
         errorFeedback();
 
         if (outcome.reason === 'noCard') {
-          setError(outcome.message ?? 'אין כרטיס אשראי שמור. הוסיפו כרטיס כדי לתרום.');
-        } else if (outcome.reason === 'chargeFailed') {
-          setError(outcome.message ?? 'החיוב נכשל. נסו שוב.');
+          setHint(outcome.message ?? 'אין כרטיס אשראי שמור. הוסיפו כרטיס כדי לתרום.');
         } else {
-          setError('הסכום אינו תקין.');
+          setChargeError(outcome.message ?? 'החיוב נכשל. נסו שוב.');
         }
         return;
       }
@@ -100,7 +102,7 @@ export default function GivingScreen() {
   );
 
   return (
-    <Screen padded={false}>
+    <Screen padded={false} style={styles.screen}>
       <View style={styles.header}>
         <StreakBadge days={streak.current} active={totals.hasGivenToday} />
 
@@ -108,11 +110,7 @@ export default function GivingScreen() {
           <Pressable
             accessibilityRole="button"
             style={[styles.cardBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Ionicons
-              name={card ? 'card-outline' : 'add-circle-outline'}
-              size={16}
-              color={colors.textMuted}
-            />
+            <CreditCard size={16} color={colors.textMuted} strokeWidth={1.75} />
             <Text style={[styles.cardBadgeText, { color: colors.text }]}>
               {card ? `•••• ${card.last4}` : 'הוספת כרטיס'}
             </Text>
@@ -133,10 +131,10 @@ export default function GivingScreen() {
 
         {charging ? <ProcessingBanner message="מבצעים את התרומה..." /> : null}
 
-        {error ? (
-          <View style={[styles.error, { backgroundColor: colors.surfaceAlt }]}>
-            <Ionicons name="alert-circle-outline" size={16} color={colors.danger} />
-            <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+        {hint ? (
+          <View style={[styles.hintBanner, { backgroundColor: colors.surfaceAlt }]}>
+            <AlertCircle size={16} color={colors.danger} strokeWidth={1.75} />
+            <Text style={[styles.hintText, { color: colors.danger }]}>{hint}</Text>
           </View>
         ) : null}
       </View>
@@ -165,7 +163,7 @@ export default function GivingScreen() {
             styles.custom,
             { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
           ]}>
-          <Ionicons name="add" size={22} color={colors.textMuted} />
+          <Plus size={22} color={colors.textMuted} strokeWidth={1.75} />
           <Text style={[styles.customText, { color: colors.textMuted }]}>סכום אחר</Text>
         </Pressable>
       </View>
@@ -186,7 +184,16 @@ export default function GivingScreen() {
         onClose={() => setLastDonation(null)}
         onSaveDedication={attachDedication}
         onShareReceipt={(donation) => {
-          void shareReceipt(donation).catch(() => setError('לא הצלחנו להפיק קבלה כרגע.'));
+          void shareReceipt(donation).catch(() => setHint('לא הצלחנו להפיק קבלה כרגע.'));
+        }}
+      />
+
+      <ChargeFailedModal
+        message={chargeError}
+        onDismiss={() => setChargeError(null)}
+        onRetry={() => {
+          setChargeError(null);
+          if (lastAmount) void handleDrop(lastAmount);
         }}
       />
     </Screen>
@@ -194,6 +201,9 @@ export default function GivingScreen() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    paddingBottom: TAB_BAR_CLEARANCE,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -229,7 +239,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  error: {
+  hintBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs + 2,
@@ -238,7 +248,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radius.md,
   },
-  errorText: {
+  hintText: {
     flex: 1,
     fontSize: fontSize.xs,
     fontWeight: '600',

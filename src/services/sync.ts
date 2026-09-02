@@ -73,6 +73,8 @@ export async function pullProfile(): Promise<ProfileRow | null> {
       phone: profile.phone,
       idNumber: profile.receipt_id_number,
     },
+    termsAcceptedAt: profile.terms_accepted_at,
+    termsVersion: profile.terms_version,
   });
 
   return profile;
@@ -97,21 +99,24 @@ export async function pullDonations(limit = 100): Promise<void> {
 }
 
 /**
- * Pulls categories and coin amounts - both editable from the admin site.
- * Falls back silently to whatever the store already has (the bundled
- * defaults) if either table is empty or unreachable.
+ * Pulls categories, coin amounts, charities and approvals - all editable
+ * from the admin site. Falls back silently to whatever the store already
+ * has (the bundled defaults) if a table is empty or unreachable.
  */
-export async function pullGivingConfig(): Promise<void> {
+export async function pullContent(): Promise<void> {
   if (!supabase) return;
 
-  const [{ data: categoryRows }, { data: settingsRow }] = await Promise.all([
-    supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
-    supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
-  ]);
+  const [{ data: categoryRows }, { data: settingsRow }, { data: charityRows }, { data: approvalRows }] =
+    await Promise.all([
+      supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
+      supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
+      supabase.from('charities').select('*').eq('is_active', true).order('category_id'),
+      supabase.from('approvals').select('*').order('sort_order'),
+    ]);
 
   const current = useAppStore.getState();
 
-  useAppStore.getState().setGivingConfig({
+  useAppStore.getState().setContent({
     categories: categoryRows?.length
       ? categoryRows.map((row) => ({
           id: row.id,
@@ -121,6 +126,25 @@ export async function pullGivingConfig(): Promise<void> {
         }))
       : current.categories,
     coinAmounts: settingsRow?.coin_amounts?.length ? settingsRow.coin_amounts : current.coinAmounts,
+    charities: charityRows?.length
+      ? charityRows.map((row) => ({
+          id: row.id,
+          name: row.name,
+          categoryId: row.category_id,
+          description: row.description,
+          allocation: row.allocation,
+          hasClause46: row.has_clause_46,
+        }))
+      : current.charities,
+    approvals: approvalRows?.length
+      ? approvalRows.map((row) => ({
+          id: row.id,
+          rabbiName: row.rabbi_name,
+          title: row.title,
+          imageUrl: row.image_url,
+          year: row.year,
+        }))
+      : current.approvals,
   });
 }
 
@@ -150,7 +174,7 @@ export async function syncAll(): Promise<void> {
   try {
     await pullProfile();
     await pullDonations();
-    await pullGivingConfig();
+    await pullContent();
   } catch (error) {
     console.warn('sync failed', error);
   }

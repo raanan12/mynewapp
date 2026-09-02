@@ -1,3 +1,4 @@
+import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -12,7 +13,7 @@ import Animated, {
 import { fontSize, palette, radius, spacing } from '@/constants/theme';
 
 export type TzedakahBoxHandle = {
-  /** Squash + glow, called the moment a coin enters the slot. */
+  /** Scale bounce + golden ripple, called the moment a coin enters the slot. */
   receiveCoin: () => void;
 };
 
@@ -22,59 +23,61 @@ export const BOX_HEIGHT = 210;
 export const SLOT_OFFSET_Y = -BOX_HEIGHT / 2 + 26;
 
 type TzedakahBoxProps = {
-  /** Total given today, engraved on the front plate. */
+  /** Total given today, shown on the frosted panel. */
   todayTotal: string;
 };
 
 /**
- * Stylized 3D Tzedakah box. Built from layered views rather than a 3D engine so
- * it stays cheap on older devices and works in Expo Go.
+ * Frosted acrylic Tzedakah box. Built from layered views + a real BlurView
+ * rather than a 3D engine, so it stays cheap on older devices and works in
+ * Expo Go.
  */
 export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(function TzedakahBox(
   { todayTotal },
   ref
 ) {
-  const squash = useSharedValue(0);
-  const glow = useSharedValue(0);
+  const bounce = useSharedValue(0);
+  const ripple = useSharedValue(0);
 
   useImperativeHandle(ref, () => ({
     receiveCoin() {
-      squash.value = withSequence(
-        withTiming(1, { duration: 110 }),
-        withSpring(0, { damping: 7, stiffness: 220 })
+      bounce.value = withSequence(
+        withTiming(1, { duration: 90 }),
+        withSpring(0, { damping: 6, stiffness: 200 })
       );
-      glow.value = withSequence(withTiming(1, { duration: 140 }), withTiming(0, { duration: 620 }));
+      ripple.value = 0;
+      ripple.value = withTiming(1, { duration: 620 });
     },
   }));
 
   const bodyStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleY: 1 - squash.value * 0.06 }, { scaleX: 1 + squash.value * 0.04 }],
+    transform: [{ scale: 1 + bounce.value * 0.03 }],
   }));
 
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glow.value * 0.85,
-    transform: [{ scale: 1 + glow.value * 0.12 }],
+  const rippleStyle = useAnimatedStyle(() => ({
+    opacity: (1 - ripple.value) * 0.7,
+    transform: [{ scale: 0.3 + ripple.value * 2.4 }],
   }));
 
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.glow, glowStyle]} pointerEvents="none" />
-
       <Animated.View style={[styles.body, bodyStyle]}>
-        {/* Lid - rotated to fake perspective. */}
+        <BlurView intensity={45} tint="light" style={StyleSheet.absoluteFill} />
         <LinearGradient
-          colors={[palette.navySoft, palette.navy]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.lid}>
-          <View style={styles.slot} />
-        </LinearGradient>
-
-        <LinearGradient
-          colors={[palette.navy, palette.navyDeep]}
+          colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.08)']}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
-          style={styles.front}>
+          style={StyleSheet.absoluteFill}
+        />
+
+        <View style={styles.lid}>
+          <View style={styles.slotHalo} pointerEvents="none">
+            <Animated.View style={[styles.ripple, rippleStyle]} />
+          </View>
+          <View style={styles.slot} />
+        </View>
+
+        <View style={styles.front}>
           <View style={styles.plate}>
             <Text style={styles.plateTitle}>צְדָקָה</Text>
             <View style={styles.plateRule} />
@@ -87,7 +90,7 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
               <View key={index} style={styles.rivet} />
             ))}
           </View>
-        </LinearGradient>
+        </View>
       </Animated.View>
 
       <View style={styles.shadow} pointerEvents="none" />
@@ -102,41 +105,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  glow: {
-    position: 'absolute',
-    width: BOX_WIDTH + 60,
-    height: BOX_HEIGHT + 60,
-    borderRadius: radius.xl + 20,
-    backgroundColor: palette.gold,
-    opacity: 0,
-  },
   body: {
     width: BOX_WIDTH,
     height: BOX_HEIGHT,
     borderRadius: radius.lg,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: palette.gold,
-    shadowColor: '#000000',
+    borderWidth: 1.5,
+    borderColor: 'rgba(197,160,89,0.55)',
+    shadowColor: palette.charcoal,
     shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 10,
   },
   lid: {
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: palette.goldDeep,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(197,160,89,0.35)',
+  },
+  slotHalo: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ripple: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: palette.gold,
   },
   slot: {
     width: 96,
-    height: 12,
+    height: 11,
     borderRadius: radius.pill,
-    backgroundColor: '#05080F',
+    backgroundColor: 'rgba(28,25,23,0.65)',
     borderWidth: 1,
-    borderColor: palette.goldDeep,
+    borderColor: 'rgba(197,160,89,0.5)',
   },
   front: {
     flex: 1,
@@ -150,11 +160,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(212,175,55,0.5)',
-    backgroundColor: 'rgba(212,175,55,0.08)',
+    borderColor: 'rgba(197,160,89,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.5)',
   },
   plateTitle: {
-    color: palette.gold,
+    color: palette.goldDeep,
     fontSize: fontSize.lg,
     fontWeight: '800',
     letterSpacing: 3,
@@ -162,15 +172,15 @@ const styles = StyleSheet.create({
   plateRule: {
     width: 54,
     height: 1,
-    backgroundColor: palette.goldDeep,
+    backgroundColor: palette.gold,
     marginVertical: spacing.xs + 2,
   },
   plateSub: {
-    color: '#B8C4D9',
+    color: palette.taupe,
     fontSize: fontSize.xs,
   },
   plateAmount: {
-    color: palette.cream,
+    color: palette.charcoal,
     fontSize: fontSize.lg,
     fontWeight: '800',
     marginTop: 2,
@@ -185,8 +195,8 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: palette.goldDeep,
-    opacity: 0.8,
+    backgroundColor: palette.gold,
+    opacity: 0.7,
   },
   shadow: {
     position: 'absolute',
@@ -194,7 +204,7 @@ const styles = StyleSheet.create({
     width: BOX_WIDTH * 0.8,
     height: 14,
     borderRadius: radius.pill,
-    backgroundColor: '#000000',
-    opacity: 0.16,
+    backgroundColor: palette.charcoal,
+    opacity: 0.08,
   },
 });

@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { CheckCircle2, Flame } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -53,7 +53,10 @@ export function DonationModal({
             entering={FadeInDown.springify().damping(18)}
             style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Animated.View entering={FadeIn.delay(120)} style={styles.checkWrap}>
-              <Ionicons name="checkmark-circle" size={54} color={palette.gold} />
+              <View style={[styles.checkCircle, { backgroundColor: 'rgba(16,185,129,0.12)' }]}>
+                <CheckCircle2 size={40} color={colors.success} strokeWidth={2} />
+              </View>
+              <Text style={[styles.checkLabel, { color: colors.success }]}>התרומה נקלטה בהצלחה</Text>
             </Animated.View>
 
             <Text style={[styles.amount, { color: colors.text }]}>
@@ -64,7 +67,7 @@ export function DonationModal({
             </Text>
 
             <View style={[styles.streakRow, { backgroundColor: colors.surfaceAlt }]}>
-              <Ionicons name="flame" size={18} color={palette.gold} />
+              <Flame size={18} color={palette.gold} fill={palette.gold} strokeWidth={1.75} />
               <Text style={[styles.streakText, { color: colors.text }]}>
                 רצף של {streak} {streak === 1 ? 'יום' : 'ימים'}
               </Text>
@@ -120,7 +123,7 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(10,16,30,0.55)',
+    backgroundColor: 'rgba(28,25,23,0.4)',
   },
   sheet: {
     borderTopLeftRadius: radius.xl,
@@ -132,6 +135,18 @@ const styles = StyleSheet.create({
   },
   checkWrap: {
     alignItems: 'center',
+    gap: spacing.xs,
+  },
+  checkCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '800',
   },
   amount: {
     fontSize: fontSize.xl,

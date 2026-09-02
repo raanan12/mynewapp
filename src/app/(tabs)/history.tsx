@@ -1,10 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FileText, Gift, Heart, Zap } from 'lucide-react-native';
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { StreakBadge } from '@/components/streak-badge';
 import { Card } from '@/components/ui/card';
-import { fontSize, palette, radius, spacing } from '@/constants/theme';
+import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { shareReceipt } from '@/services/receipts';
 import { categoryLabel, useAppStore, useTotals } from '@/store/app-store';
@@ -80,11 +80,11 @@ export default function HistoryScreen() {
           <Card style={styles.row}>
             <View style={styles.rowMain}>
               <View style={[styles.iconWrap, { backgroundColor: colors.surfaceAlt }]}>
-                <Ionicons
-                  name={item.source === 'auto' ? 'flash-outline' : 'heart'}
-                  size={18}
-                  color={palette.gold}
-                />
+                {item.source === 'auto' ? (
+                  <Zap size={18} color={palette.gold} strokeWidth={1.75} />
+                ) : (
+                  <Heart size={18} color={palette.gold} fill={palette.gold} strokeWidth={1.5} />
+                )}
               </View>
 
               <View style={styles.rowInfo}>
@@ -111,14 +111,14 @@ export default function HistoryScreen() {
               accessibilityRole="button"
               onPress={() => void shareReceipt(item).catch(() => {})}
               style={[styles.receipt, { borderColor: colors.border }]}>
-              <Ionicons name="document-text-outline" size={14} color={colors.textMuted} />
+              <FileText size={14} color={colors.textMuted} strokeWidth={1.75} />
               <Text style={[styles.receiptText, { color: colors.textMuted }]}>קבלה סעיף 46</Text>
             </Pressable>
           </Card>
         )}
         ListEmptyComponent={
           <Card style={styles.empty}>
-            <Ionicons name="gift-outline" size={32} color={colors.textMuted} />
+            <Gift size={32} color={colors.textMuted} strokeWidth={1.5} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>עוד לא נתרם דבר</Text>
             <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
               כל תרומה תופיע כאן יחד עם הקבלה שלה.
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.sm,
-    paddingBottom: spacing.xxl,
+    paddingBottom: TAB_BAR_CLEARANCE,
   },
   header: {
     gap: spacing.md,

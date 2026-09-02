@@ -54,6 +54,25 @@ export function ApprovalsEditor() {
     await load();
   }
 
+  function updateField(id: string, field: keyof ApprovalRow, value: string | number) {
+    setRows((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+  }
+
+  async function saveRow(row: ApprovalRow) {
+    const { error: updateError } = await supabase
+      .from('approvals')
+      .update({
+        rabbi_name: row.rabbi_name,
+        title: row.title,
+        image_url: row.image_url,
+        year: row.year,
+        sort_order: row.sort_order,
+      })
+      .eq('id', row.id);
+
+    if (updateError) setError(updateError.message);
+  }
+
   async function deleteApproval(id: string) {
     if (!confirm('למחוק את ההסכמה?')) return;
     await supabase.from('approvals').delete().eq('id', id);
@@ -93,17 +112,48 @@ export function ApprovalsEditor() {
 
       <div className="section-title">הסכמות קיימות</div>
       {rows.map((row) => (
-        <div className="row" key={row.id}>
-          <img src={row.image_url} alt={row.rabbi_name} style={{ width: 48, height: 64, objectFit: 'cover', borderRadius: 6 }} />
-          <div className="row-main">
-            <div className="row-title">{row.rabbi_name}</div>
-            <div className="row-meta">
-              {row.title} · {row.year}
+        <div className="card" key={row.id}>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <img
+              src={row.image_url}
+              alt={row.rabbi_name}
+              style={{ width: 48, height: 64, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
+            />
+            <div className="form-grid" style={{ flex: 1 }}>
+              <div>
+                <label>שם הרב</label>
+                <input value={row.rabbi_name} onChange={(event) => updateField(row.id, 'rabbi_name', event.target.value)} />
+              </div>
+              <div>
+                <label>כותרת</label>
+                <input value={row.title} onChange={(event) => updateField(row.id, 'title', event.target.value)} />
+              </div>
+              <div>
+                <label>שנה</label>
+                <input value={row.year} onChange={(event) => updateField(row.id, 'year', event.target.value)} />
+              </div>
+              <div>
+                <label>קישור לתמונה</label>
+                <input value={row.image_url} onChange={(event) => updateField(row.id, 'image_url', event.target.value)} />
+              </div>
+              <div>
+                <label>סדר תצוגה</label>
+                <input
+                  type="number"
+                  value={row.sort_order}
+                  onChange={(event) => updateField(row.id, 'sort_order', Number(event.target.value))}
+                />
+              </div>
             </div>
           </div>
-          <button className="btn danger" onClick={() => void deleteApproval(row.id)}>
-            מחיקה
-          </button>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <button className="btn secondary" onClick={() => void saveRow(row)}>
+              שמירה
+            </button>
+            <button className="btn danger" onClick={() => void deleteApproval(row.id)}>
+              מחיקה
+            </button>
+          </div>
         </div>
       ))}
     </div>

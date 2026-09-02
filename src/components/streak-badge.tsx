@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Flame } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { fontSize, palette, radius, spacing } from '@/constants/theme';
@@ -22,11 +22,16 @@ export function StreakBadge({ days, active, compact = false }: StreakBadgeProps)
         styles.root,
         compact && styles.compact,
         {
-          backgroundColor: active ? 'rgba(212,175,55,0.16)' : colors.surfaceAlt,
+          backgroundColor: active ? 'rgba(197,160,89,0.16)' : colors.surfaceAlt,
           borderColor: active ? palette.gold : colors.border,
         },
       ]}>
-      <Ionicons name="flame" size={compact ? 15 : 18} color={active ? palette.gold : colors.textMuted} />
+      <Flame
+        size={compact ? 15 : 18}
+        color={active ? palette.gold : colors.textMuted}
+        fill={active ? palette.gold : 'none'}
+        strokeWidth={1.75}
+      />
       <Text style={[styles.value, { color: colors.text, fontSize: compact ? fontSize.sm : fontSize.md }]}>
         {days}
       </Text>

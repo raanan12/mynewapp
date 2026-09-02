@@ -1,11 +1,12 @@
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { ChevronLeft, FileText, RotateCcw } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { reminderSlots } from '@/constants/content';
-import { fontSize, palette, radius, spacing } from '@/constants/theme';
+import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { kesherMode } from '@/services/kesher';
 import { syncSchedule } from '@/services/notifications';
@@ -15,6 +16,7 @@ import { formatCurrency, formatTime } from '@/utils/format';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
 
   const settings = useAppStore((state) => state.settings);
   const card = useAppStore((state) => state.card);
@@ -109,7 +111,7 @@ export default function SettingsScreen() {
                       {
                         borderColor: settings.autoPilot.amount === amount ? palette.gold : colors.border,
                         backgroundColor:
-                          settings.autoPilot.amount === amount ? 'rgba(212,175,55,0.14)' : 'transparent',
+                          settings.autoPilot.amount === amount ? 'rgba(197,160,89,0.14)' : 'transparent',
                       },
                     ]}>
                     <Text style={[styles.optionText, { color: colors.text }]}>
@@ -136,7 +138,7 @@ export default function SettingsScreen() {
                           settings.autoPilot.categoryId === category.id ? palette.gold : colors.border,
                         backgroundColor:
                           settings.autoPilot.categoryId === category.id
-                            ? 'rgba(212,175,55,0.14)'
+                            ? 'rgba(197,160,89,0.14)'
                             : 'transparent',
                       },
                     ]}>
@@ -156,7 +158,7 @@ export default function SettingsScreen() {
                       {
                         borderColor: settings.autoPilot.slot === slot ? palette.gold : colors.border,
                         backgroundColor:
-                          settings.autoPilot.slot === slot ? 'rgba(212,175,55,0.14)' : 'transparent',
+                          settings.autoPilot.slot === slot ? 'rgba(197,160,89,0.14)' : 'transparent',
                       },
                     ]}>
                     <Text style={[styles.optionText, { color: colors.text }]}>
@@ -195,8 +197,14 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
+        <Pressable onPress={() => router.push('/terms')} style={[styles.link, { borderColor: colors.border }]}>
+          <FileText size={18} color={colors.textMuted} strokeWidth={1.75} />
+          <Text style={[styles.linkText, { color: colors.text }]}>תקנון ותנאי שימוש</Text>
+          <ChevronLeft size={18} color={colors.textMuted} strokeWidth={1.75} />
+        </Pressable>
+
         <Pressable onPress={confirmReset} style={[styles.link, { borderColor: colors.border }]}>
-          <Ionicons name="refresh-outline" size={18} color={colors.danger} />
+          <RotateCcw size={18} color={colors.danger} strokeWidth={1.75} />
           <Text style={[styles.linkText, { color: colors.danger }]}>איפוס נתוני הדגמה</Text>
         </Pressable>
 
@@ -212,7 +220,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: TAB_BAR_CLEARANCE,
   },
   screenTitle: {
     fontSize: fontSize.xl,

@@ -5,7 +5,8 @@
  * `defaultCategories` and `defaultCoinAmounts` are the fallback shown before
  * (or without) Supabase - both are editable from the admin site afterwards
  * and override these at runtime (see `useAppStore().categories`/
- * `coinAmounts`, hydrated by `pullGivingConfig` in src/services/sync.ts).
+ * `coinAmounts`/`charities`/`approvals`, hydrated by `pullContent` in
+ * src/services/sync.ts).
  */
 
 import type { Category, Charity, Quote, RabbinicalApproval, ReminderSlot } from '@/types';
@@ -37,7 +38,7 @@ export const defaultCategories: readonly Category[] = [
   },
 ] as const;
 
-export const charities: readonly Charity[] = [
+export const defaultCharities: readonly Charity[] = [
   {
     id: 'yad-yesomim',
     name: 'יד ליתומים',
@@ -96,7 +97,7 @@ export const charities: readonly Charity[] = [
   },
 ] as const;
 
-export const quotes: readonly Quote[] = [
+export const defaultQuotes: readonly Quote[] = [
   { id: 'q1', text: 'וּצְדָקָה תַּצִּיל מִמָּוֶת', source: 'משלי י, ב' },
   { id: 'q2', text: 'גָּדוֹל הַמַּעֲשֶׂה יוֹתֵר מִן הָעוֹשֶׂה', source: 'בבא בתרא ט' },
   { id: 'q3', text: 'עוֹלָם חֶסֶד יִבָּנֶה', source: 'תהילים פט, ג' },
@@ -106,7 +107,7 @@ export const quotes: readonly Quote[] = [
   { id: 'q7', text: 'מַתָּן בַּסֵּתֶר יִכְפֶּה אָף', source: 'משלי כא, יד' },
 ] as const;
 
-export const approvals: readonly RabbinicalApproval[] = [
+export const defaultApprovals: readonly RabbinicalApproval[] = [
   {
     id: 'a1',
     rabbiName: 'הרב יצחק זילברשטיין שליט״א',

@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { CreditCard, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -7,7 +7,7 @@ import { ReceiptDetailsCard } from '@/components/receipt-details-card';
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { fontSize, spacing } from '@/constants/theme';
+import { fontSize, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { kesherMode } from '@/services/kesher';
 import { removeSavedCard } from '@/services/wallet';
@@ -48,7 +48,7 @@ export default function WalletScreen() {
         {card ? (
           <Card>
             <View style={styles.cardRow}>
-              <Ionicons name="card-outline" size={22} color={colors.textMuted} />
+              <CreditCard size={22} color={colors.textMuted} strokeWidth={1.75} />
               <View style={styles.cardInfo}>
                 <Text style={[styles.cardBrand, { color: colors.text }]}>
                   {card.brand} •••• {card.last4}
@@ -64,7 +64,7 @@ export default function WalletScreen() {
                 {removingCard ? (
                   <ActivityIndicator size="small" color={colors.danger} />
                 ) : (
-                  <Ionicons name="trash-outline" size={20} color={colors.danger} />
+                  <Trash2 size={20} color={colors.danger} strokeWidth={1.75} />
                 )}
               </Pressable>
             </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: TAB_BAR_CLEARANCE,
   },
   screenTitle: {
     fontSize: fontSize.xl,

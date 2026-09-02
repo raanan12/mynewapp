@@ -27,15 +27,20 @@ create table if not exists public.profiles (
   auto_reload_threshold numeric(10, 2) not null default 10,
   auto_reload_amount numeric(10, 2) not null default 50,
   is_admin boolean not null default false,
+  -- Legal record of terms-of-service acceptance, gating card entry.
+  terms_accepted_at timestamptz,
+  terms_version text,
   created_at timestamptz not null default now(),
   last_seen_at timestamptz not null default now()
 );
 
 -- `create table if not exists` above does not retrofit new columns onto a
--- table that already existed - these two ALTERs make re-running this file
--- safe on a database created before receipt_email/receipt_id_number existed.
+-- table that already existed - these ALTERs make re-running this file safe
+-- on a database created before these columns existed.
 alter table public.profiles add column if not exists receipt_email text;
 alter table public.profiles add column if not exists receipt_id_number text;
+alter table public.profiles add column if not exists terms_accepted_at timestamptz;
+alter table public.profiles add column if not exists terms_version text;
 
 -- -------------------------------------------------------------- categories --
 -- Editable from the admin site - this is what "what you can donate to" and
@@ -67,6 +72,16 @@ create table if not exists public.charities (
   has_clause_46 boolean not null default false,
   is_active boolean not null default true
 );
+
+insert into public.charities (id, name, category_id, description, allocation, has_clause_46) values
+  ('yad-yesomim', 'יד ליתומים', 'orphans', 'ליווי חודשי ליתומים עד גיל 18', 60, true),
+  ('beit-almanot', 'בית האלמנות', 'orphans', 'סיוע כלכלי ורגשי לאלמנות', 40, true),
+  ('ezer-marpe', 'עזר מרפא', 'medical', 'ציוד רפואי והסעות לטיפולים', 55, true),
+  ('refuah-vechesed', 'רפואה וחסד', 'medical', 'תמיכה במשפחות של חולים קשים', 45, true),
+  ('keren-amelei-torah', 'קרן עמלי תורה', 'torah', 'מלגות קיום לאברכים', 100, true),
+  ('lechem-chukeinu', 'לחם חוקנו', 'families', 'סלי מזון שבועיים למשפחות', 70, true),
+  ('chesed-bakehila', 'חסד בקהילה', 'families', 'תשלומי חשמל, מים וארנונה', 30, false)
+on conflict (id) do nothing;
 
 -- --------------------------------------------------------------- donations --
 create table if not exists public.donations (
@@ -142,6 +157,16 @@ create table if not exists public.quotes (
   is_active boolean not null default true
 );
 
+insert into public.quotes (id, text, source) values
+  ('q1', 'וּצְדָקָה תַּצִּיל מִמָּוֶת', 'משלי י, ב'),
+  ('q2', 'גָּדוֹל הַמַּעֲשֶׂה יוֹתֵר מִן הָעוֹשֶׂה', 'בבא בתרא ט'),
+  ('q3', 'עוֹלָם חֶסֶד יִבָּנֶה', 'תהילים פט, ג'),
+  ('q4', 'כָּל הַמְקַיֵּים נֶפֶשׁ אַחַת, כְּאִילּוּ קִיֵּים עוֹלָם מָלֵא', 'סנהדרין ד, ה'),
+  ('q5', 'אֵין הַצְּדָקָה מִשְׁתַּלֶּמֶת אֶלָּא לְפִי חֶסֶד שֶׁבָּהּ', 'סוכה מט'),
+  ('q6', 'צֶדֶק צֶדֶק תִּרְדֹּף', 'דברים טז, כ'),
+  ('q7', 'מַתָּן בַּסֵּתֶר יִכְפֶּה אָף', 'משלי כא, יד')
+on conflict (id) do nothing;
+
 -- --------------------------------------------------------------- approvals --
 create table if not exists public.approvals (
   id text primary key,
@@ -151,6 +176,15 @@ create table if not exists public.approvals (
   year text not null default '',
   sort_order integer not null default 0
 );
+
+insert into public.approvals (id, rabbi_name, title, image_url, year, sort_order) values
+  ('a1', 'הרב יצחק זילברשטיין שליט״א', 'מכתב ברכה והסכמה לפעילות הארגון',
+   'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%94%D7%A1%D7%9B%D7%9E%D7%94', 'תשפ״ה', 1),
+  ('a2', 'הרב שריאל רוזנברג שליט״א', 'אישור על ניהול כספי הצדקה כהלכה',
+   'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%90%D7%99%D7%A9%D7%95%D7%A8', 'תשפ״ד', 2),
+  ('a3', 'הרב משה שאול קליין שליט״א', 'הסכמה לגביית מעשר כספים דרך האפליקציה',
+   'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%9E%D7%9B%D7%AA%D7%91', 'תשפ״ד', 3)
+on conflict (id) do nothing;
 
 -- ---------------------------------------------------------- kesher_settings --
 -- Non-secret Kesher (קשר סליקה) routing ids. The API username/password stay
