@@ -1,46 +1,61 @@
-# MyNewApp
+# החסד היומי · Daily Chesed
 
-React Native app built with [Expo](https://expo.dev) and [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing, TypeScript).
+אפליקציית צדקה יומית בעברית מלאה עם תמיכת RTL. המטרה: פחות מ־10 שניות פעילות יומית.
 
-## Getting started
+## הרצה
 
 ```bash
 npm install
-cp .env.example .env.local   # optional, for API config
-npm start                    # then press i / a / w, or scan the QR code
+npx expo start
 ```
 
-Other scripts: `npm run ios`, `npm run android`, `npm run web`, `npm run lint`.
+הפרויקט רץ על **Expo SDK 54** (React Native 0.81) כדי להישאר תואם ל־Expo Go 54.
 
-## Project structure
+> RTL מופעל דרך `I18nManager.forceRTL(true)`. ב־iOS הדגל נכנס לתוקף רק אחרי הפעלה
+> מחדש מלאה של האפליקציה — לא ב־Fast Refresh.
+
+## מבנה
 
 ```
 src/
-  app/              # Routes only — every file here is a screen or layout
-    _layout.tsx     # Root layout: navigation theme + safe-area provider
-    index.tsx       # "/" screen
-  components/       # Reusable presentational components
-    screen.tsx      # Themed page container
-    ui/             # Generic design-system primitives (Button, ...)
-  config/
-    env.ts          # Runtime config from EXPO_PUBLIC_* env vars
-  constants/
-    theme.ts        # Design tokens: colors, spacing, radius, font sizes
-  hooks/
-    use-theme.ts    # Resolves the active color scheme into tokens
-  services/
-    api/client.ts   # fetch wrapper: base URL, JSON, timeouts, ApiError
-  types/
-    index.ts        # Shared domain types
-  utils/
-    format.ts       # Pure helpers
-assets/images/      # Icons, splash, static images
+  app/                 מסכים (expo-router)
+    (tabs)/            נתינה · ארנק · היסטוריה · שקיפות · הגדרות
+    add-card.tsx       הזנת כרטיס חד־פעמית (טוקניזציה)
+    admin.tsx          לוח ניהול
+  components/          קופת צדקה, מטבעות, מודלים, רכיבי UI
+  services/            kesher · wallet · notifications · receipts · feedback
+  store/app-store.ts   Zustand: ארנק, רצף, היסטוריה, הגדרות
+  lib/supabase.ts      לקוח + טיפוסי סכימה
+  constants/           theme (ניווט/זהב/קרם) + תוכן עברי
+supabase/schema.sql    טבלאות, RLS ופונקציית apply_donation
 ```
 
-Conventions:
+## מצבי הרצה
 
-- **`src/app` holds routes and nothing else.** Anything reusable moves into a sibling folder.
-- Import with the `@/` alias (`@/components/ui/button`), never with `../../..`.
-- File names are `kebab-case`; components and hooks are named exports.
-- Colors, spacing and radii come from `@/constants/theme` — no magic numbers in components.
-- Network calls go through `@/services/api/client`; secrets never live in `EXPO_PUBLIC_*`.
+| רכיב | ללא הגדרה | עם הגדרה |
+| --- | --- | --- |
+| Supabase | הכל מקומי (AsyncStorage) | סנכרון ענן |
+| קשר סליקה | סליקה מדומה | חיוב אמיתי דרך פרוקסי |
+
+ראו `.env.example`.
+
+## אבטחת תשלומים
+
+מפתח הסוד של קשר **לא** נמצא באפליקציה. כל קריאה עוברת דרך פרוקסי משלכם
+(`EXPO_PUBLIC_KESHER_PROXY_URL`) שמוסיף את הסוד בצד השרת.
+
+`tokenizeCard` שולח פרטי כרטיס גולמיים לפרוקסי, מה שמכניס את הפרוקסי לתחולת
+PCI-DSS. לפרודקשן עדיף להשתמש בדף הסליקה המתארח של קשר ולקבל ממנו טוקן מוכן.
+
+## מצב הפיצ'רים
+
+| פיצ'ר | סטטוס |
+| --- | --- |
+| קופת צדקה + החלקה/הקשה, רטט וצליל | עובד |
+| ארנק נטען מראש, טעינה בלחיצה, טעינה אוטומטית | עובד (סליקה מדומה) |
+| רצף ימים, הקדשות, היסטוריה | עובד |
+| תזכורות יומיות + טייס אוטומטי | עובד (התראות מקומיות) |
+| קבלות PDF סעיף 46 | נוצר מקומית; קבלה רשמית דרך קשר |
+| הסכמות רבנים | תמונות דמה — יש להחליף בסריקות אמיתיות |
+| לוח ניהול | קריאה מהמכשיר; כתיבה ל־Supabase טרם חוברה |
+| התחברות משתמשים | לא מומש |
