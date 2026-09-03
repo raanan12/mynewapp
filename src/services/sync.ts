@@ -106,14 +106,21 @@ export async function pullDonations(limit = 100): Promise<void> {
 export async function pullContent(): Promise<void> {
   if (!supabase) return;
 
-  const [{ data: categoryRows }, { data: settingsRow }, { data: charityRows }, { data: approvalRows }, { data: textRows }] =
-    await Promise.all([
-      supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
-      supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
-      supabase.from('charities').select('*').eq('is_active', true).order('category_id'),
-      supabase.from('approvals').select('*').order('sort_order'),
-      supabase.from('app_texts').select('id, value'),
-    ]);
+  const [
+    { data: categoryRows },
+    { data: settingsRow },
+    { data: charityRows },
+    { data: approvalRows },
+    { data: textRows },
+    { data: termsRows },
+  ] = await Promise.all([
+    supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
+    supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
+    supabase.from('charities').select('*').eq('is_active', true).order('category_id'),
+    supabase.from('approvals').select('*').order('sort_order'),
+    supabase.from('app_texts').select('id, value'),
+    supabase.from('terms_sections').select('*').order('sort_order'),
+  ]);
 
   const current = useAppStore.getState();
 
@@ -149,6 +156,9 @@ export async function pullContent(): Promise<void> {
     texts: textRows?.length
       ? { ...current.texts, ...Object.fromEntries(textRows.map((row) => [row.id, row.value])) }
       : current.texts,
+    termsSections: termsRows?.length
+      ? termsRows.map((row) => ({ id: row.id, title: row.title, body: row.body }))
+      : current.termsSections,
   });
 }
 

@@ -204,7 +204,50 @@ insert into public.app_texts (id, value) values
   ('association_name', 'עמותת החסד היומי'),
   ('association_number', '58-0000000'),
   ('association_clause46', 'אישור מס הכנסה לפי סעיף 46 לפקודה'),
-  ('association_address', 'רחוב הרב קוק 1, ירושלים')
+  ('association_address', 'רחוב הרב קוק 1, ירושלים'),
+  ('history_title', 'ההיסטוריה שלי'),
+  ('history_total_label', 'סך הנתינה'),
+  ('history_donations_label', 'תרומות'),
+  ('history_streak_label', 'הרצף הארוך'),
+  ('history_empty_title', 'עוד לא נתרם דבר'),
+  ('history_empty_body', 'כל תרומה תופיע כאן יחד עם הקבלה שלה.'),
+  ('terms_header_title', 'תקנון ותנאי שימוש'),
+  ('terms_page_title', 'תקנון, תנאי שימוש ומדיניות פרטיות'),
+  ('terms_version', '1.0')
+on conflict (id) do nothing;
+
+-- --------------------------------------------------------- terms_sections --
+-- Terms-of-service body, editable from the admin site. `terms_version`
+-- (in app_texts above) gates re-acceptance: bump it whenever a paragraph
+-- here changes materially, so every user - including ones who already
+-- accepted an older wording - is asked to accept again before their next
+-- card entry (see add-card.tsx / src/services/terms.ts).
+create table if not exists public.terms_sections (
+  id text primary key,
+  title text not null,
+  body text not null default '',
+  sort_order integer not null default 0
+);
+
+insert into public.terms_sections (id, title, body, sort_order) values
+  ('t1', '1. כללי ואישור התקנון', $$1.1. שימוש באפליקציה, הרשמה אליה, הזנת פרטים אישיים ו/או ביצוע תרומה מותנים בהסכמה מלאה, מפורשת ובלתי חוזרת לכל תנאי תקנון זה.
+
+1.2. אישור התקנון באמצעות סימון תיבת הסימון ו/או לחיצה על כפתור ההמשך/אישור מהווה חוזה משפטי מחייב בין המשתמש לבין מפעיל האפליקציה.
+
+1.3. אם אינך מסכים לתנאי מתנאי תקנון זה, אינך מורשה לעשות כל שימוש באפליקציה או למסור בה פרטים כלשהם.$$, 1),
+  ('t2', '2. עיבוד תשלומים, אשראי ושמירת אסימונים (Tokens)', $$2.1. פרטי כרטיס האשראי המלאים של המשתמש (מספר כרטיס, תוקף, קוד CVV) אינם נשמרים, אינם מעובדים ואינם מאוחסנים בשרתי האפליקציה או אצל מפעילה.
+
+2.2. כל פעולות הסליקה, אבטחת נתוני התשלום המוצפנים ויצירת מפתח הזיהוי המוצפן ("Token") מבוצעות באופן ישיר ובלעדי על ידי ספק סליקה חיצוני מורשה בעל תקן אבטחה בינלאומי PCI-DSS (להלן: "ספק הסליקה").
+
+2.3. המשתמש מסכים ומאשר באופן מפורש את שמירת ה-Token אצל ספק הסליקה לצורך ביצוע תרומות עתידיות או חוזרות בהתאם להוראותיו באפליקציה.$$, 2),
+  ('t3', '3. אבטחת מידע והסרת אחריות גורפת מאירועי אבטחה/דליפות מידע', $$3.1. מפעיל האפליקציה יישם אמצעי אבטחת מידע סבירים ומקובלים. עם זאת, בסביבה טכנולוגית ומקוונת (אינטרנט, שרתי ענן, אפליקציות ניידות) לא ניתן להבטיח אבטחה מוחלטת או חסינות הרמטית מפני חדירות, פריצות, כשלים טכניים או מתקפות סייבר.
+
+3.2. הסרת אחריות מוחלטת מכל דליפת מידע: מפעיל האפליקציה, מנהליו, עובדיו, שותפיו או מי מטעמו לא יישאו בכל אחריות, ישירה, עקיפה, תוצאתית או מיוחדת, לכל נזק, הפסד, עוגמת נפש, פגיעה בפרטיות, הוצאה או כפל חיוב שיגרמו למשתמש או למי מטעמו כתוצאה מ: א. דליפה, זליגה, חשיפה, או גישה בלתי מורשית לכל פרטי המשתמש שמורים במערכת (לרבות אך לא רק: שם מלא, כתובת דוא"ל, מספר טלפון, תעודת זהות, כתובת מגורים, היסטוריית תרומות, כתובות IP ונתוני שימוש). ב. דליפה, פריצה או שימוש לרעה בנתוני אשראי או ב-Token שאירעו אצל ספק הסליקה החיצוני או בתווך התקשורת אליו. ג. מתקפות סייבר, נוזקות, סוסים טרויאניים, פריצות לשרתים/בסיסי נתונים, תקשורת לקויה או כוח עליון.
+
+3.3. המשתמש מצהיר ומאשר כי הזנת כל פיסת מידע אישי באפליקציה, כמו גם ביצוע התשלום ושמירת ה-Token, נעשים על אחריותו הבלעדית והמלאה. המשתמש מוותר באופן סופי ובלתי חוזר על כל טענה, דרישה או תביעה כנגד מפעיל האפליקציה בגין אירועי אבטחת מידע כאמור.$$, 3),
+  ('t4', '4. ברירת דין ופנייה לגורמים המוסמכים', $$4.1. בכל מקרה של טענה או דרישה הנוגעת למעילת אשראי, חיוב כפול, כשל בסליקה או שימוש לרעה ב-Token, תהיה פניית המשתמש מופנית בראש ובראשונה לחברת הסליקה החיצונית ו/או לחברת האשראי המנפיקה, בהתאם להוראות חוק שירותי תשלום, תשע"ט-2019.
+
+4.2. על תקנון זה יחולו אך ורק דיני מדינת ישראל, וסמכות השיפוט הבלעדית בכל עניין הנובע ממנו תהיה מסורה לבתי המשפט המוסמכים במחוז הראשי של מפעיל האפליקציה.$$, 4)
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------- kesher_settings --
@@ -243,6 +286,7 @@ alter table public.kesher_settings enable row level security;
 alter table public.categories enable row level security;
 alter table public.giving_settings enable row level security;
 alter table public.app_texts enable row level security;
+alter table public.terms_sections enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -316,6 +360,13 @@ create policy "public read app texts" on public.app_texts
   for select using (true);
 drop policy if exists "admin writes app texts" on public.app_texts;
 create policy "admin writes app texts" on public.app_texts
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "public read terms sections" on public.terms_sections;
+create policy "public read terms sections" on public.terms_sections
+  for select using (true);
+drop policy if exists "admin writes terms sections" on public.terms_sections;
+create policy "admin writes terms sections" on public.terms_sections
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- --------------------------------------------------- profile bootstrapping --

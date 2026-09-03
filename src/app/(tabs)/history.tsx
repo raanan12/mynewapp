@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { shareReceipt } from '@/services/receipts';
-import { categoryLabel, useAppStore, useTotals } from '@/store/app-store';
+import { categoryLabel, useAppStore, useAppText, useTotals } from '@/store/app-store';
 import type { Donation } from '@/types';
 import { formatCurrency, formatDate, formatDateTime } from '@/utils/format';
 
@@ -33,6 +33,12 @@ export default function HistoryScreen() {
   const donations = useAppStore((state) => state.donations);
   const streak = useAppStore((state) => state.streak);
   const totals = useTotals();
+  const titleText = useAppText('history_title');
+  const totalLabel = useAppText('history_total_label');
+  const donationsLabel = useAppText('history_donations_label');
+  const streakLabel = useAppText('history_streak_label');
+  const emptyTitle = useAppText('history_empty_title');
+  const emptyBody = useAppText('history_empty_body');
 
   const sections = groupByDay(donations);
 
@@ -46,22 +52,22 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={[styles.screenTitle, { color: colors.text }]}>ההיסטוריה שלי</Text>
+            <Text style={[styles.screenTitle, { color: colors.text }]}>{titleText}</Text>
 
             <View style={styles.stats}>
               <Card style={styles.stat}>
                 <Text style={[styles.statValue, { color: colors.text }]}>
                   {formatCurrency(totals.total)}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>סך הנתינה</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>{totalLabel}</Text>
               </Card>
               <Card style={styles.stat}>
                 <Text style={[styles.statValue, { color: colors.text }]}>{totals.count}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>תרומות</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>{donationsLabel}</Text>
               </Card>
               <Card style={styles.stat}>
                 <Text style={[styles.statValue, { color: colors.text }]}>{streak.longest}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>הרצף הארוך</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>{streakLabel}</Text>
               </Card>
             </View>
 
@@ -119,10 +125,8 @@ export default function HistoryScreen() {
         ListEmptyComponent={
           <Card style={styles.empty}>
             <Gift size={32} color={colors.textMuted} strokeWidth={1.5} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>עוד לא נתרם דבר</Text>
-            <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
-              כל תרומה תופיע כאן יחד עם הקבלה שלה.
-            </Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>{emptyTitle}</Text>
+            <Text style={[styles.emptyBody, { color: colors.textMuted }]}>{emptyBody}</Text>
           </Card>
         }
       />

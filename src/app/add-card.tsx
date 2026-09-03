@@ -7,13 +7,12 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isSupabaseConfigured } from '@/config/env';
-import { TERMS_VERSION } from '@/constants/terms';
 import { fontSize, radius, spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { errorFeedback, successFeedback } from '@/services/feedback';
 import { KesherError, kesher, kesherMode } from '@/services/kesher';
 import { startHostedCardEntry } from '@/services/kesher-hosted';
-import { useAppStore } from '@/store/app-store';
+import { useAppStore, useAppText } from '@/store/app-store';
 
 /** Group the PAN into 4-digit blocks while typing. */
 function formatCardNumber(value: string): string {
@@ -40,8 +39,9 @@ export default function AddCardScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const saveCard = useAppStore((state) => state.saveCard);
+  const currentTermsVersion = useAppText('terms_version');
   const hasAcceptedTerms = useAppStore(
-    (state) => Boolean(state.termsAcceptedAt) && state.termsVersion === TERMS_VERSION
+    (state) => Boolean(state.termsAcceptedAt) && state.termsVersion === currentTermsVersion
   );
 
   const [busy, setBusy] = useState(false);

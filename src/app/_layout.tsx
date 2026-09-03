@@ -11,6 +11,7 @@ import { useAutoPilot } from '@/hooks/use-auto-pilot';
 import { useSync } from '@/hooks/use-sync';
 import { useTheme } from '@/hooks/use-theme';
 import { warmUpFeedback } from '@/services/feedback';
+import { useAppText } from '@/store/app-store';
 
 // RTL must be forced before the first render. On iOS the flag only takes full
 // effect after the app is restarted, which is why it lives at module scope.
@@ -21,6 +22,7 @@ if (!I18nManager.isRTL) {
 
 export default function RootLayout() {
   const { isDark, colors } = useTheme();
+  const termsHeaderTitle = useAppText('terms_header_title');
 
   // Sync runs before auto-pilot so the streak is the server's number by the
   // time we decide whether today's donation already happened.
@@ -55,7 +57,7 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="terms"
-              options={{ presentation: 'modal', headerShown: true, title: 'תקנון ותנאי שימוש' }}
+              options={{ presentation: 'modal', headerShown: true, title: termsHeaderTitle }}
             />
           </Stack>
           <StatusBar style={isDark ? 'light' : 'dark'} />

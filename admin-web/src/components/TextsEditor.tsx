@@ -16,6 +16,21 @@ const SECTIONS: { title: string; keys: string[] }[] = [
     title: 'פרטי עמותה וקבלת מס',
     keys: ['association_name', 'association_number', 'association_clause46', 'association_address'],
   },
+  {
+    title: 'מסך היסטוריה',
+    keys: [
+      'history_title',
+      'history_total_label',
+      'history_donations_label',
+      'history_streak_label',
+      'history_empty_title',
+      'history_empty_body',
+    ],
+  },
+  {
+    title: 'כותרות מסך התקנון',
+    keys: ['terms_header_title', 'terms_page_title'],
+  },
 ];
 
 const KEY_LABELS: Record<string, string> = {
@@ -28,6 +43,14 @@ const KEY_LABELS: Record<string, string> = {
   association_number: 'מספר עמותה (ע.ר.)',
   association_clause46: 'טקסט אישור מס (סעיף 46)',
   association_address: 'כתובת העמותה',
+  history_title: 'כותרת המסך',
+  history_total_label: 'תווית "סך הנתינה"',
+  history_donations_label: 'תווית "תרומות"',
+  history_streak_label: 'תווית "הרצף הארוך"',
+  history_empty_title: 'כותרת מצב ריק',
+  history_empty_body: 'טקסט מצב ריק',
+  terms_header_title: 'כותרת חלון התקנון',
+  terms_page_title: 'כותרת בתוך העמוד',
 };
 
 /** Free-form UI copy - tab bar labels and the association/tax-receipt

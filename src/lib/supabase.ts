@@ -128,6 +128,15 @@ export type AppTextRow = {
   value: string;
 };
 
+/** Terms of service sections, editable from the admin site - see
+ *  `defaultTermsSections` in src/constants/content.ts. */
+export type TermsSectionRow = {
+  id: string;
+  title: string;
+  body: string;
+  sort_order: number;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -184,6 +193,12 @@ export type Database = {
         Row: AppTextRow;
         Insert: AppTextRow;
         Update: Partial<AppTextRow>;
+        Relationships: [];
+      };
+      terms_sections: {
+        Row: TermsSectionRow;
+        Insert: TermsSectionRow;
+        Update: Partial<TermsSectionRow>;
         Relationships: [];
       };
     };

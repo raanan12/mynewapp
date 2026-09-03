@@ -5,27 +5,30 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
-import { TERMS_VERSION, termsSections } from '@/constants/terms';
 import { fontSize, radius, spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { errorFeedback, successFeedback } from '@/services/feedback';
 import { acceptTerms } from '@/services/terms';
-import { useAppStore } from '@/store/app-store';
+import { useAppStore, useAppText, useTermsSections } from '@/store/app-store';
 
 /**
  * Terms of service / privacy policy.
  *
  * Doubles as the acceptance gate that blocks card entry (see add-card.tsx,
  * which redirects here whenever `termsAcceptedAt`/`termsVersion` do not match
- * the current `TERMS_VERSION`) and as a plain read-only view from Settings
- * once already accepted.
+ * the current version) and as a plain read-only view from Settings once
+ * already accepted. Both the wording and the version are admin-editable
+ * (see `app_texts`/`terms_sections` in supabase/schema.sql).
  */
 export default function TermsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const termsSections = useTermsSections();
+  const currentVersion = useAppText('terms_version');
+  const pageTitle = useAppText('terms_page_title');
 
   const alreadyAccepted = useAppStore(
-    (state) => Boolean(state.termsAcceptedAt) && state.termsVersion === TERMS_VERSION
+    (state) => Boolean(state.termsAcceptedAt) && state.termsVersion === currentVersion
   );
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -52,12 +55,12 @@ export default function TermsScreen() {
   return (
     <Screen padded={false} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>תקנון, תנאי שימוש ומדיניות פרטיות</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{pageTitle}</Text>
 
         {termsSections.map((section) => (
-          <View key={section.title} style={styles.section}>
+          <View key={section.id} style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
-            {section.paragraphs.map((paragraph) => (
+            {section.body.split(/\n{2,}/).map((paragraph) => (
               <Text key={paragraph} style={[styles.paragraph, { color: colors.textMuted }]}>
                 {paragraph}
               </Text>

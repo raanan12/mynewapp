@@ -22,7 +22,9 @@ import {
   defaultCategories,
   defaultCharities,
   defaultCoinAmounts,
+  defaultTermsSections,
   defaultTexts,
+  type TermsSection,
 } from '@/constants/content';
 import type {
   CardToken,
@@ -66,6 +68,8 @@ type AppState = {
   /** Free-form UI copy (tab labels, association/tax text, ...) - merged over
    *  `defaultTexts`, per-key, by whatever `app_texts` rows exist remotely. */
   texts: Record<string, string>;
+  /** Terms of service sections shown on the terms/acceptance screen. */
+  termsSections: TermsSection[];
   /** Legal record of terms-of-service acceptance - null until the user
    *  explicitly accepts on the terms screen, which gates card entry. */
   termsAcceptedAt: string | null;
@@ -85,6 +89,7 @@ type AppState = {
     charities: Charity[];
     approvals: RabbinicalApproval[];
     texts: Record<string, string>;
+    termsSections: TermsSection[];
   }) => void;
   acceptTerms: (version: string) => void;
   markOnboarded: () => void;
@@ -130,6 +135,7 @@ export const useAppStore = create<AppState>()(
       charities: [...defaultCharities],
       approvals: [...defaultApprovals],
       texts: { ...defaultTexts },
+      termsSections: [...defaultTermsSections],
       termsAcceptedAt: null,
       termsVersion: null,
       hasOnboarded: false,
@@ -156,8 +162,8 @@ export const useAppStore = create<AppState>()(
           ),
         })),
 
-      setContent: ({ categories, coinAmounts, charities, approvals, texts }) =>
-        set({ categories, coinAmounts, charities, approvals, texts }),
+      setContent: ({ categories, coinAmounts, charities, approvals, texts, termsSections }) =>
+        set({ categories, coinAmounts, charities, approvals, texts, termsSections }),
 
       acceptTerms: (version) => set({ termsAcceptedAt: new Date().toISOString(), termsVersion: version }),
 
@@ -175,6 +181,7 @@ export const useAppStore = create<AppState>()(
           charities: [...defaultCharities],
           approvals: [...defaultApprovals],
           texts: { ...defaultTexts },
+          termsSections: [...defaultTermsSections],
           termsAcceptedAt: null,
           termsVersion: null,
           hasOnboarded: false,
@@ -278,6 +285,8 @@ export const useCoinAmounts = () => useAppStore((state) => state.coinAmounts);
 export const useCharities = () => useAppStore((state) => state.charities);
 
 export const useApprovals = () => useAppStore((state) => state.approvals);
+
+export const useTermsSections = () => useAppStore((state) => state.termsSections);
 
 export const useAppText = (key: string) => useAppStore((state) => state.texts[key] ?? key);
 
