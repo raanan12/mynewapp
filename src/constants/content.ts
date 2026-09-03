@@ -134,6 +134,21 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
 /** Coin denominations offered on the giving screen - fallback only. */
 export const defaultCoinAmounts: readonly number[] = [1, 5, 10];
 
+/** Free-form UI copy (tab bar labels, association/tax-receipt details, ...)
+ *  - fallback only, overridden by the `app_texts` table once Supabase
+ *  answers (see `useAppText`/`appText` in src/store/app-store.ts). */
+export const defaultTexts: Record<string, string> = {
+  tab_giving: 'נתינה',
+  tab_wallet: 'כרטיס',
+  tab_history: 'היסטוריה',
+  tab_trust: 'שקיפות',
+  tab_settings: 'הגדרות',
+  association_name: 'עמותת החסד היומי',
+  association_number: '58-0000000',
+  association_clause46: 'אישור מס הכנסה לפי סעיף 46 לפקודה',
+  association_address: 'רחוב הרב קוק 1, ירושלים',
+};
+
 export const reminderSlots: Record<ReminderSlot, { label: string; hour: number; minute: number }> = {
   morning: { label: 'בוקר (אחרי שחרית)', hour: 8, minute: 0 },
   afternoon: { label: 'צהריים (מנחה)', hour: 13, minute: 30 },

@@ -17,7 +17,13 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 
-import { defaultApprovals, defaultCategories, defaultCharities, defaultCoinAmounts } from '@/constants/content';
+import {
+  defaultApprovals,
+  defaultCategories,
+  defaultCharities,
+  defaultCoinAmounts,
+  defaultTexts,
+} from '@/constants/content';
 import type {
   CardToken,
   Category,
@@ -57,6 +63,9 @@ type AppState = {
   coinAmounts: number[];
   charities: Charity[];
   approvals: RabbinicalApproval[];
+  /** Free-form UI copy (tab labels, association/tax text, ...) - merged over
+   *  `defaultTexts`, per-key, by whatever `app_texts` rows exist remotely. */
+  texts: Record<string, string>;
   /** Legal record of terms-of-service acceptance - null until the user
    *  explicitly accepts on the terms screen, which gates card entry. */
   termsAcceptedAt: string | null;
@@ -75,6 +84,7 @@ type AppState = {
     coinAmounts: number[];
     charities: Charity[];
     approvals: RabbinicalApproval[];
+    texts: Record<string, string>;
   }) => void;
   acceptTerms: (version: string) => void;
   markOnboarded: () => void;
@@ -119,6 +129,7 @@ export const useAppStore = create<AppState>()(
       coinAmounts: [...defaultCoinAmounts],
       charities: [...defaultCharities],
       approvals: [...defaultApprovals],
+      texts: { ...defaultTexts },
       termsAcceptedAt: null,
       termsVersion: null,
       hasOnboarded: false,
@@ -145,8 +156,8 @@ export const useAppStore = create<AppState>()(
           ),
         })),
 
-      setContent: ({ categories, coinAmounts, charities, approvals }) =>
-        set({ categories, coinAmounts, charities, approvals }),
+      setContent: ({ categories, coinAmounts, charities, approvals, texts }) =>
+        set({ categories, coinAmounts, charities, approvals, texts }),
 
       acceptTerms: (version) => set({ termsAcceptedAt: new Date().toISOString(), termsVersion: version }),
 
@@ -163,6 +174,7 @@ export const useAppStore = create<AppState>()(
           coinAmounts: [...defaultCoinAmounts],
           charities: [...defaultCharities],
           approvals: [...defaultApprovals],
+          texts: { ...defaultTexts },
           termsAcceptedAt: null,
           termsVersion: null,
           hasOnboarded: false,
@@ -266,3 +278,10 @@ export const useCoinAmounts = () => useAppStore((state) => state.coinAmounts);
 export const useCharities = () => useAppStore((state) => state.charities);
 
 export const useApprovals = () => useAppStore((state) => state.approvals);
+
+export const useAppText = (key: string) => useAppStore((state) => state.texts[key] ?? key);
+
+/** Non-reactive lookup for use outside render (e.g. receipt HTML generation). */
+export function appText(key: string): string {
+  return useAppStore.getState().texts[key] ?? key;
+}

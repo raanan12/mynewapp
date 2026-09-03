@@ -186,6 +186,27 @@ insert into public.approvals (id, rabbi_name, title, image_url, year, sort_order
    'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%9E%D7%9B%D7%AA%D7%91', 'תשפ״ד', 3)
 on conflict (id) do nothing;
 
+-- -------------------------------------------------------------- app_texts --
+-- Free-form UI copy (tab bar labels, association/tax-receipt details, ...)
+-- editable from the admin site. Only keys the app code actually reads have
+-- any effect - see `defaultTexts` in src/constants/content.ts for the set.
+create table if not exists public.app_texts (
+  id text primary key,
+  value text not null default ''
+);
+
+insert into public.app_texts (id, value) values
+  ('tab_giving', 'נתינה'),
+  ('tab_wallet', 'כרטיס'),
+  ('tab_history', 'היסטוריה'),
+  ('tab_trust', 'שקיפות'),
+  ('tab_settings', 'הגדרות'),
+  ('association_name', 'עמותת החסד היומי'),
+  ('association_number', '58-0000000'),
+  ('association_clause46', 'אישור מס הכנסה לפי סעיף 46 לפקודה'),
+  ('association_address', 'רחוב הרב קוק 1, ירושלים')
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------- kesher_settings --
 -- Non-secret Kesher (קשר סליקה) routing ids. The API username/password stay
 -- as Edge Function secrets and never appear in this table.
@@ -221,6 +242,7 @@ alter table public.approvals enable row level security;
 alter table public.kesher_settings enable row level security;
 alter table public.categories enable row level security;
 alter table public.giving_settings enable row level security;
+alter table public.app_texts enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -287,6 +309,13 @@ create policy "public read giving settings" on public.giving_settings
   for select using (true);
 drop policy if exists "admin writes giving settings" on public.giving_settings;
 create policy "admin writes giving settings" on public.giving_settings
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "public read app texts" on public.app_texts;
+create policy "public read app texts" on public.app_texts
+  for select using (true);
+drop policy if exists "admin writes app texts" on public.app_texts;
+create policy "admin writes app texts" on public.app_texts
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- --------------------------------------------------- profile bootstrapping --

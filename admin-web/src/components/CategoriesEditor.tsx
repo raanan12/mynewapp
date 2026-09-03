@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
+import { IconPicker } from './icon-picker';
 
 type CategoryRow = {
   id: string;
@@ -109,10 +110,10 @@ export function CategoriesEditor() {
               onChange={(event) => setDraft({ ...draft, description: event.target.value })}
             />
           </div>
-          <div>
-            <label>אייקון (heart / medkit / book / home / star / gift / people / school / restaurant)</label>
-            <input value={draft.icon} onChange={(event) => setDraft({ ...draft, icon: event.target.value })} />
-          </div>
+        </div>
+        <div style={{ marginBottom: 10 }}>
+          <label>אייקון</label>
+          <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
         </div>
         {error ? <p className="error">{error}</p> : null}
         <button className="btn" onClick={() => void addCategory()}>
@@ -140,10 +141,6 @@ export function CategoriesEditor() {
               />
             </div>
             <div>
-              <label>אייקון</label>
-              <input value={row.icon} onChange={(event) => void updateField(row.id, 'icon', event.target.value)} />
-            </div>
-            <div>
               <label>סדר הופעה</label>
               <input
                 type="number"
@@ -151,6 +148,10 @@ export function CategoriesEditor() {
                 onChange={(event) => void updateField(row.id, 'sort_order', Number(event.target.value))}
               />
             </div>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <label>אייקון</label>
+            <IconPicker value={row.icon} onChange={(icon) => void updateField(row.id, 'icon', icon)} />
           </div>
           <label className="checkbox-row">
             <input

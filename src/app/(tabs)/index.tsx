@@ -109,7 +109,10 @@ export default function GivingScreen() {
         <Link href={card ? '/(tabs)/wallet' : '/add-card'} asChild>
           <Pressable
             accessibilityRole="button"
-            style={[styles.cardBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            style={StyleSheet.flatten([
+              styles.cardBadge,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ])}>
             <CreditCard size={16} color={colors.textMuted} strokeWidth={1.75} />
             <Text style={[styles.cardBadgeText, { color: colors.text }]}>
               {card ? `•••• ${card.last4}` : 'הוספת כרטיס'}

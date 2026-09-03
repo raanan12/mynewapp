@@ -6,8 +6,9 @@ import { CategoriesEditor } from '../components/CategoriesEditor';
 import { CharitiesEditor } from '../components/CharitiesEditor';
 import { CoinAmountsEditor } from '../components/CoinAmountsEditor';
 import { QuotesEditor } from '../components/QuotesEditor';
+import { TextsEditor } from '../components/TextsEditor';
 
-type Tab = 'analytics' | 'categories' | 'coins' | 'charities' | 'quotes' | 'approvals';
+type Tab = 'analytics' | 'categories' | 'coins' | 'charities' | 'quotes' | 'approvals' | 'texts';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'analytics', label: 'נתונים' },
@@ -16,6 +17,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'charities', label: 'ארגונים' },
   { id: 'quotes', label: 'ציטוטים' },
   { id: 'approvals', label: 'הסכמות' },
+  { id: 'texts', label: 'טקסטים באפליקציה' },
 ];
 
 type DashboardProps = {
@@ -52,6 +54,7 @@ export function Dashboard({ onSignOut }: DashboardProps) {
         {tab === 'charities' ? <CharitiesEditor /> : null}
         {tab === 'quotes' ? <QuotesEditor /> : null}
         {tab === 'approvals' ? <ApprovalsEditor /> : null}
+        {tab === 'texts' ? <TextsEditor /> : null}
       </div>
     </div>
   );

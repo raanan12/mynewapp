@@ -121,6 +121,13 @@ export type KesherSettingsRow = {
   project_number: string | null;
 };
 
+/** Free-form UI copy (tab labels, association/tax text, ...), editable from
+ *  the admin site - see `defaultTexts` in src/constants/content.ts. */
+export type AppTextRow = {
+  id: string;
+  value: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -171,6 +178,12 @@ export type Database = {
         Row: KesherSettingsRow;
         Insert: KesherSettingsRow;
         Update: Partial<KesherSettingsRow>;
+        Relationships: [];
+      };
+      app_texts: {
+        Row: AppTextRow;
+        Insert: AppTextRow;
+        Update: Partial<AppTextRow>;
         Relationships: [];
       };
     };

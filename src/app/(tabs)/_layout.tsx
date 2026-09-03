@@ -4,9 +4,15 @@ import { StyleSheet } from 'react-native';
 
 import { fontSize, radius, shadow } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAppText } from '@/store/app-store';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
+  const tabGiving = useAppText('tab_giving');
+  const tabWallet = useAppText('tab_wallet');
+  const tabHistory = useAppText('tab_history');
+  const tabTrust = useAppText('tab_trust');
+  const tabSettings = useAppText('tab_settings');
 
   return (
     <Tabs
@@ -33,35 +39,35 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'נתינה',
+          title: tabGiving,
           tabBarIcon: ({ color, size }) => <Gift size={size} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="wallet"
         options={{
-          title: 'כרטיס',
+          title: tabWallet,
           tabBarIcon: ({ color, size }) => <WalletCards size={size} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'היסטוריה',
+          title: tabHistory,
           tabBarIcon: ({ color, size }) => <History size={size} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="trust"
         options={{
-          title: 'שקיפות',
+          title: tabTrust,
           tabBarIcon: ({ color, size }) => <ShieldCheck size={size} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'הגדרות',
+          title: tabSettings,
           tabBarIcon: ({ color, size }) => <Settings size={size} color={color} strokeWidth={1.75} />,
         }}
       />

@@ -262,6 +262,31 @@ select {
   margin: 24px 0 10px;
 }
 
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.icon-option {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd6c4;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.icon-option.selected {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--gold);
+}
+
 .pill-list {
   display: flex;
   flex-wrap: wrap;

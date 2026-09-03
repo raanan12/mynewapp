@@ -7,8 +7,7 @@ import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { association } from '@/services/receipts';
-import { useApprovals, useCategories, useCategoryTotals, useCharities, useTotals } from '@/store/app-store';
+import { useApprovals, useAppText, useCategories, useCategoryTotals, useCharities, useTotals } from '@/store/app-store';
 import type { RabbinicalApproval } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -20,6 +19,9 @@ export default function TrustScreen() {
   const approvals = useApprovals();
   const byCategory = useCategoryTotals();
   const totals = useTotals();
+  const associationName = useAppText('association_name');
+  const associationNumber = useAppText('association_number');
+  const associationClause46 = useAppText('association_clause46');
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
 
   return (
@@ -30,10 +32,10 @@ export default function TrustScreen() {
         <Card elevated>
           <View style={styles.badgeRow}>
             <ShieldCheck size={20} color={palette.gold} strokeWidth={1.75} />
-            <Text style={[styles.badgeText, { color: colors.text }]}>{association.clause46}</Text>
+            <Text style={[styles.badgeText, { color: colors.text }]}>{associationClause46}</Text>
           </View>
           <Text style={[styles.body, { color: colors.textMuted }]}>
-            {association.name} · ע.ר. {association.number}. כל תרומה מזכה בקבלה דיגיטלית המוכרת
+            {associationName} · ע.ר. {associationNumber}. כל תרומה מזכה בקבלה דיגיטלית המוכרת
             לצורכי החזר מס, ונשלחת אוטומטית עם השלמת התרומה.
           </Text>
         </Card>

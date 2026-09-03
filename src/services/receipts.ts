@@ -10,22 +10,25 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 import { kesher } from '@/services/kesher';
-import { categoryLabel } from '@/store/app-store';
+import { appText, categoryLabel } from '@/store/app-store';
 import type { Donation } from '@/types';
 import { formatCurrency, formatDateTime } from '@/utils/format';
 
-/** Replace with the real association details before going live. */
-export const association = {
-  name: 'עמותת החסד היומי',
-  number: '58-0000000',
-  clause46: 'אישור מס הכנסה לפי סעיף 46 לפקודה',
-  address: 'רחוב הרב קוק 1, ירושלים',
-} as const;
+/** Reads the current admin-edited association/tax-receipt details. */
+export function association() {
+  return {
+    name: appText('association_name'),
+    number: appText('association_number'),
+    clause46: appText('association_clause46'),
+    address: appText('association_address'),
+  };
+}
 
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"]/g, (char) => `&${{ '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot' }[char]};`);
 
 function receiptHtml(donation: Donation): string {
+  const org = association();
   const dedication = donation.dedication
     ? `<tr><th>הקדשה</th><td>${escapeHtml(donation.dedication)}</td></tr>`
     : '';
@@ -52,8 +55,8 @@ function receiptHtml(donation: Donation): string {
   <body>
     <div class="head">
       <h1>קבלה על תרומה</h1>
-      <div class="sub">${association.name} · ע.ר. ${association.number}</div>
-      <div class="sub">${association.clause46}</div>
+      <div class="sub">${org.name} · ע.ר. ${org.number}</div>
+      <div class="sub">${org.clause46}</div>
     </div>
 
     <table>
@@ -68,7 +71,7 @@ function receiptHtml(donation: Donation): string {
 
     <footer>
       קבלה זו מוכרת לצורכי החזר מס לפי סעיף 46 לפקודת מס הכנסה.<br />
-      ${association.address}
+      ${org.address}
     </footer>
   </body>
 </html>`;

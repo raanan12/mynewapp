@@ -1,6 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { fontSize, radius, shadow, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { resolveCategoryIcon } from '@/lib/category-icon';
 import { tapFeedback } from '@/services/feedback';
@@ -12,85 +12,89 @@ type CategoryPickerProps = {
   onChange: (id: CategoryId) => void;
 };
 
-const TILE_SIZE = 72;
+const TILE_SIZE = 90;
 
-/** Square tiles - icon on top, label below - so every category stays the
- *  same proportions regardless of how long its Hebrew label is. */
+/** A single soft white card wrapping uniform 90x90 tiles - scrollable so it
+ *  still holds up if the admin adds more categories than fit on screen. */
 export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
   const { colors } = useTheme();
   const categories = useCategories();
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}>
-      {categories.map((category) => {
-        const selected = category.id === value;
-        const Icon = resolveCategoryIcon(category.icon);
+    <View style={styles.card}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}>
+        {categories.map((category) => {
+          const selected = category.id === value;
+          const Icon = resolveCategoryIcon(category.icon);
 
-        return (
-          <Pressable
-            key={category.id}
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
-            onPress={() => {
-              tapFeedback();
-              onChange(category.id);
-            }}
-            style={({ pressed }) => [
-              styles.tile,
-              selected && shadow.card,
-              {
-                backgroundColor: selected ? colors.accent : colors.surface,
-                borderColor: selected ? colors.accent : colors.border,
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}>
-            <View
-              style={[
-                styles.iconWrap,
-                { backgroundColor: selected ? 'rgba(255,255,255,0.2)' : colors.surfaceAlt },
+          return (
+            <Pressable
+              key={category.id}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              onPress={() => {
+                tapFeedback();
+                onChange(category.id);
+              }}
+              style={({ pressed }) => [
+                styles.tile,
+                {
+                  backgroundColor: selected ? colors.accent : '#F7F4EE',
+                  borderColor: selected ? colors.accent : '#E8E2D5',
+                  opacity: pressed ? 0.85 : 1,
+                },
               ]}>
-              <Icon size={20} color={selected ? colors.onAccent : colors.textMuted} strokeWidth={1.75} />
-            </View>
-            <Text
-              style={[styles.label, { color: selected ? colors.onAccent : colors.text }]}
-              numberOfLines={2}>
-              {category.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+              <Icon size={26} color={selected ? colors.onAccent : '#333333'} strokeWidth={1.75} />
+              <Text
+                style={[styles.label, { color: selected ? colors.onAccent : '#333333' }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}>
+                {category.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    marginHorizontal: spacing.lg,
+    borderRadius: 20,
+    padding: 12,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    ...Platform.select({ android: { elevation: 3 } }),
+  },
   row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    flexGrow: 1,
   },
   tile: {
     width: TILE_SIZE,
+    height: TILE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
   },
   label: {
-    fontSize: fontSize.xs,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '600',
     textAlign: 'center',
+    marginTop: 6,
+    width: '100%',
   },
 });

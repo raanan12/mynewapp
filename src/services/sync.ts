@@ -106,12 +106,13 @@ export async function pullDonations(limit = 100): Promise<void> {
 export async function pullContent(): Promise<void> {
   if (!supabase) return;
 
-  const [{ data: categoryRows }, { data: settingsRow }, { data: charityRows }, { data: approvalRows }] =
+  const [{ data: categoryRows }, { data: settingsRow }, { data: charityRows }, { data: approvalRows }, { data: textRows }] =
     await Promise.all([
       supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
       supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
       supabase.from('charities').select('*').eq('is_active', true).order('category_id'),
       supabase.from('approvals').select('*').order('sort_order'),
+      supabase.from('app_texts').select('id, value'),
     ]);
 
   const current = useAppStore.getState();
@@ -145,6 +146,9 @@ export async function pullContent(): Promise<void> {
           year: row.year,
         }))
       : current.approvals,
+    texts: textRows?.length
+      ? { ...current.texts, ...Object.fromEntries(textRows.map((row) => [row.id, row.value])) }
+      : current.texts,
   });
 }
 
