@@ -109,7 +109,10 @@ export default function GivingScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="הגדרות תזכורות"
-            style={[styles.notifyBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            style={StyleSheet.flatten([
+              styles.notifyBadge,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ])}>
             <Bell size={18} color={colors.textMuted} strokeWidth={1.75} />
           </Pressable>
         </Link>
