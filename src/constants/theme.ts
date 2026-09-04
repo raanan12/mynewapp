@@ -19,6 +19,11 @@ export const palette = {
   /** Richer gold - decorative use only (coin metal, box trim). */
   goldRich: '#D4AF37',
   goldDeep: '#A8861F',
+  /** Pearl/silver - the "custom amount" coin, so it reads as distinct from
+   *  the fixed-amount gold coins rather than as one more denomination. */
+  silver: '#E7E5E2',
+  silverRich: '#F4F3F1',
+  silverDeep: '#B9B6B0',
   charcoal: '#1C1917',
   taupe: '#78716C',
   border: 'rgba(28, 25, 23, 0.08)',

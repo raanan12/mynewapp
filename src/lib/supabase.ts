@@ -141,6 +141,14 @@ export type TermsSectionRow = {
   sort_order: number;
 };
 
+/** The optional "atmosphere sentence" on the giving screen - see
+ *  `defaultHomeMessage` in src/constants/content.ts. */
+export type HomeMessageRow = {
+  id: string;
+  text: string;
+  image_url: string | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -203,6 +211,12 @@ export type Database = {
         Row: TermsSectionRow;
         Insert: TermsSectionRow;
         Update: Partial<TermsSectionRow>;
+        Relationships: [];
+      };
+      home_message: {
+        Row: HomeMessageRow;
+        Insert: HomeMessageRow;
+        Update: Partial<HomeMessageRow>;
         Relationships: [];
       };
     };

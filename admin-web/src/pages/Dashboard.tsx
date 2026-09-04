@@ -5,11 +5,21 @@ import { ApprovalsEditor } from '../components/ApprovalsEditor';
 import { CategoriesEditor } from '../components/CategoriesEditor';
 import { CharitiesEditor } from '../components/CharitiesEditor';
 import { CoinAmountsEditor } from '../components/CoinAmountsEditor';
+import { HomeMessageEditor } from '../components/HomeMessageEditor';
 import { QuotesEditor } from '../components/QuotesEditor';
 import { TermsEditor } from '../components/TermsEditor';
 import { TextsEditor } from '../components/TextsEditor';
 
-type Tab = 'analytics' | 'categories' | 'coins' | 'charities' | 'quotes' | 'approvals' | 'texts' | 'terms';
+type Tab =
+  | 'analytics'
+  | 'categories'
+  | 'coins'
+  | 'charities'
+  | 'quotes'
+  | 'approvals'
+  | 'texts'
+  | 'terms'
+  | 'home';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'analytics', label: 'נתונים' },
@@ -20,6 +30,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'approvals', label: 'הסכמות' },
   { id: 'texts', label: 'טקסטים באפליקציה' },
   { id: 'terms', label: 'תקנון' },
+  { id: 'home', label: 'עמוד הבית' },
 ];
 
 type DashboardProps = {
@@ -58,6 +69,7 @@ export function Dashboard({ onSignOut }: DashboardProps) {
         {tab === 'approvals' ? <ApprovalsEditor /> : null}
         {tab === 'texts' ? <TextsEditor /> : null}
         {tab === 'terms' ? <TermsEditor /> : null}
+        {tab === 'home' ? <HomeMessageEditor /> : null}
       </div>
     </div>
   );

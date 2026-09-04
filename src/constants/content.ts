@@ -154,6 +154,15 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
 /** Coin denominations offered on the giving screen - fallback only. */
 export const defaultCoinAmounts: readonly number[] = [1, 5, 10];
 
+export type HomeMessage = {
+  text: string;
+  imageUrl: string | null;
+};
+
+/** The optional "atmosphere sentence" on the giving screen - empty text
+ *  means nothing is shown. */
+export const defaultHomeMessage: HomeMessage = { text: '', imageUrl: null };
+
 /** Free-form UI copy (tab bar labels, association/tax-receipt details, ...)
  *  - fallback only, overridden by the `app_texts` table once Supabase
  *  answers (see `useAppText`/`appText` in src/store/app-store.ts). */
@@ -177,6 +186,8 @@ export const defaultTexts: Record<string, string> = {
   terms_page_title: 'תקנון, תנאי שימוש ומדיניות פרטיות',
   trust_title: 'לאן הכסף הולך',
   wallet_title: 'כרטיס אשראי',
+  /** Empty means "use the bundled app icon" - see TzedakahBox's `logoUrl` prop. */
+  box_logo_url: '',
   /** Gates re-acceptance: bump this whenever a terms_sections paragraph
    *  changes materially, and every user - including ones who already
    *  accepted an older wording - is asked to accept again before their

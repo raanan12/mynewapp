@@ -22,8 +22,10 @@ import {
   defaultCategories,
   defaultCharities,
   defaultCoinAmounts,
+  defaultHomeMessage,
   defaultTermsSections,
   defaultTexts,
+  type HomeMessage,
   type TermsSection,
 } from '@/constants/content';
 import type {
@@ -70,6 +72,8 @@ type AppState = {
   texts: Record<string, string>;
   /** Terms of service sections shown on the terms/acceptance screen. */
   termsSections: TermsSection[];
+  /** Optional "atmosphere sentence" shown on the giving screen. */
+  homeMessage: HomeMessage;
   /** Legal record of terms-of-service acceptance - null until the user
    *  explicitly accepts on the terms screen, which gates card entry. */
   termsAcceptedAt: string | null;
@@ -90,6 +94,7 @@ type AppState = {
     approvals: RabbinicalApproval[];
     texts: Record<string, string>;
     termsSections: TermsSection[];
+    homeMessage: HomeMessage;
   }) => void;
   acceptTerms: (version: string) => void;
   markOnboarded: () => void;
@@ -136,6 +141,7 @@ export const useAppStore = create<AppState>()(
       approvals: [...defaultApprovals],
       texts: { ...defaultTexts },
       termsSections: [...defaultTermsSections],
+      homeMessage: { ...defaultHomeMessage },
       termsAcceptedAt: null,
       termsVersion: null,
       hasOnboarded: false,
@@ -162,8 +168,8 @@ export const useAppStore = create<AppState>()(
           ),
         })),
 
-      setContent: ({ categories, coinAmounts, charities, approvals, texts, termsSections }) =>
-        set({ categories, coinAmounts, charities, approvals, texts, termsSections }),
+      setContent: ({ categories, coinAmounts, charities, approvals, texts, termsSections, homeMessage }) =>
+        set({ categories, coinAmounts, charities, approvals, texts, termsSections, homeMessage }),
 
       acceptTerms: (version) => set({ termsAcceptedAt: new Date().toISOString(), termsVersion: version }),
 
@@ -182,6 +188,7 @@ export const useAppStore = create<AppState>()(
           approvals: [...defaultApprovals],
           texts: { ...defaultTexts },
           termsSections: [...defaultTermsSections],
+          homeMessage: { ...defaultHomeMessage },
           termsAcceptedAt: null,
           termsVersion: null,
           hasOnboarded: false,
@@ -287,6 +294,8 @@ export const useCharities = () => useAppStore((state) => state.charities);
 export const useApprovals = () => useAppStore((state) => state.approvals);
 
 export const useTermsSections = () => useAppStore((state) => state.termsSections);
+
+export const useHomeMessage = () => useAppStore((state) => state.homeMessage);
 
 export const useAppText = (key: string) => useAppStore((state) => state.texts[key] ?? key);
 

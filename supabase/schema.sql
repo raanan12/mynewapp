@@ -228,6 +228,7 @@ insert into public.app_texts (id, value) values
   ('terms_page_title', 'תקנון, תנאי שימוש ומדיניות פרטיות'),
   ('trust_title', 'לאן הכסף הולך'),
   ('wallet_title', 'כרטיס אשראי'),
+  ('box_logo_url', ''),
   ('terms_version', '1.0')
 on conflict (id) do nothing;
 
@@ -263,6 +264,18 @@ insert into public.terms_sections (id, title, body, sort_order) values
   ('t4', '4. ברירת דין ופנייה לגורמים המוסמכים', $$4.1. בכל מקרה של טענה או דרישה הנוגעת למעילת אשראי, חיוב כפול, כשל בסליקה או שימוש לרעה ב-Token, תהיה פניית המשתמש מופנית בראש ובראשונה לחברת הסליקה החיצונית ו/או לחברת האשראי המנפיקה, בהתאם להוראות חוק שירותי תשלום, תשע"ט-2019.
 
 4.2. על תקנון זה יחולו אך ורק דיני מדינת ישראל, וסמכות השיפוט הבלעדית בכל עניין הנובע ממנו תהיה מסורה לבתי המשפט המוסמכים במחוז הראשי של מפעיל האפליקציה.$$, 4)
+on conflict (id) do nothing;
+
+-- ------------------------------------------------------------ home_message --
+-- The optional "atmosphere sentence" shown on the giving screen, editable
+-- from the admin site - text alone, or text + an uploaded image.
+create table if not exists public.home_message (
+  id text primary key default 'default',
+  text text not null default '',
+  image_url text
+);
+
+insert into public.home_message (id) values ('default')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------- kesher_settings --
@@ -302,6 +315,7 @@ alter table public.categories enable row level security;
 alter table public.giving_settings enable row level security;
 alter table public.app_texts enable row level security;
 alter table public.terms_sections enable row level security;
+alter table public.home_message enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -382,6 +396,13 @@ create policy "public read terms sections" on public.terms_sections
   for select using (true);
 drop policy if exists "admin writes terms sections" on public.terms_sections;
 create policy "admin writes terms sections" on public.terms_sections
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "public read home message" on public.home_message;
+create policy "public read home message" on public.home_message
+  for select using (true);
+drop policy if exists "admin writes home message" on public.home_message;
+create policy "admin writes home message" on public.home_message
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- --------------------------------------------------- profile bootstrapping --

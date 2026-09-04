@@ -113,6 +113,7 @@ export async function pullContent(): Promise<void> {
     { data: approvalRows },
     { data: textRows },
     { data: termsRows },
+    { data: homeMessageRow },
   ] = await Promise.all([
     supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
     supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
@@ -120,6 +121,7 @@ export async function pullContent(): Promise<void> {
     supabase.from('approvals').select('*').order('sort_order'),
     supabase.from('app_texts').select('id, value'),
     supabase.from('terms_sections').select('*').order('sort_order'),
+    supabase.from('home_message').select('text, image_url').eq('id', 'default').maybeSingle(),
   ]);
 
   const current = useAppStore.getState();
@@ -163,6 +165,9 @@ export async function pullContent(): Promise<void> {
     termsSections: termsRows?.length
       ? termsRows.map((row) => ({ id: row.id, title: row.title, body: row.body }))
       : current.termsSections,
+    homeMessage: homeMessageRow
+      ? { text: homeMessageRow.text, imageUrl: homeMessageRow.image_url }
+      : current.homeMessage,
   });
 }
 

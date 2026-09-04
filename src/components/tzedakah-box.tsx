@@ -1,4 +1,5 @@
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -25,6 +26,9 @@ export const SLOT_OFFSET_Y = -BOX_HEIGHT / 2 + 26;
 type TzedakahBoxProps = {
   /** Total given today, shown on the frosted panel. */
   todayTotal: string;
+  /** Admin-uploaded organization logo (app_texts.box_logo_url) - falls back
+   *  to the bundled app icon when empty. */
+  logoUrl?: string | null;
 };
 
 /**
@@ -33,7 +37,7 @@ type TzedakahBoxProps = {
  * Expo Go.
  */
 export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(function TzedakahBox(
-  { todayTotal },
+  { todayTotal, logoUrl },
   ref
 ) {
   const bounce = useSharedValue(0);
@@ -79,7 +83,15 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
 
         <View style={styles.front}>
           <View style={styles.plate}>
-            <Text style={styles.plateTitle}>צְדָקָה</Text>
+            {logoUrl ? (
+              <Image source={{ uri: logoUrl }} style={styles.logo} contentFit="contain" />
+            ) : (
+              <Image
+                source={require('../../assets/images/icon.png')}
+                style={styles.logo}
+                contentFit="contain"
+              />
+            )}
             <View style={styles.plateRule} />
             <Text style={styles.plateSub}>נתרם היום</Text>
             <Text style={styles.plateAmount}>{todayTotal}</Text>
@@ -91,6 +103,13 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
             ))}
           </View>
         </View>
+
+        {/* Ornate gold corner accents - the touch that reads as "crafted
+         *  box" rather than a flat rounded rectangle. */}
+        <View style={[styles.corner, styles.cornerTL]} pointerEvents="none" />
+        <View style={[styles.corner, styles.cornerTR]} pointerEvents="none" />
+        <View style={[styles.corner, styles.cornerBL]} pointerEvents="none" />
+        <View style={[styles.corner, styles.cornerBR]} pointerEvents="none" />
       </Animated.View>
 
       <View style={styles.shadow} pointerEvents="none" />
@@ -163,11 +182,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(197,160,89,0.4)',
     backgroundColor: 'rgba(255,255,255,0.5)',
   },
-  plateTitle: {
-    color: palette.goldDeep,
-    fontSize: fontSize.lg,
-    fontWeight: '800',
-    letterSpacing: 3,
+  logo: {
+    width: 72,
+    height: 40,
   },
   plateRule: {
     width: 54,
@@ -206,5 +223,40 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: palette.charcoal,
     opacity: 0.08,
+  },
+  corner: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderColor: palette.gold,
+    opacity: 0.8,
+  },
+  cornerTL: {
+    top: 4,
+    left: 4,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderTopLeftRadius: radius.sm,
+  },
+  cornerTR: {
+    top: 4,
+    right: 4,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderTopRightRadius: radius.sm,
+  },
+  cornerBL: {
+    bottom: 4,
+    left: 4,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomLeftRadius: radius.sm,
+  },
+  cornerBR: {
+    bottom: 4,
+    right: 4,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderBottomRightRadius: radius.sm,
   },
 });

@@ -1,13 +1,15 @@
 import { Link } from 'expo-router';
-import { AlertCircle, Bell, Plus } from 'lucide-react-native';
+import { AlertCircle, Bell } from 'lucide-react-native';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { CategoryPicker } from '@/components/category-picker';
 import { ChargeFailedModal } from '@/components/charge-failed-modal';
+import { CustomAmountCoin } from '@/components/custom-amount-coin';
 import { CustomAmountModal } from '@/components/custom-amount-modal';
 import { DonationModal } from '@/components/donation-modal';
 import { DraggableCoin } from '@/components/draggable-coin';
+import { HomeMessageCard } from '@/components/home-message-card';
 import { ProcessingBanner } from '@/components/processing-banner';
 import { Screen } from '@/components/screen';
 import { StreakBadge } from '@/components/streak-badge';
@@ -16,7 +18,7 @@ import { fontSize, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme'
 import { useTheme } from '@/hooks/use-theme';
 import { errorFeedback, playCoinSound, successFeedback } from '@/services/feedback';
 import { donateWithFunds } from '@/services/wallet';
-import { useAppStore, useCoinAmounts, useTotals } from '@/store/app-store';
+import { useAppStore, useAppText, useCoinAmounts, useTotals } from '@/store/app-store';
 import type { CategoryId, Donation } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -31,6 +33,7 @@ export default function GivingScreen() {
   const attachDedication = useAppStore((state) => state.attachDedication);
   const coinAmounts = useCoinAmounts();
   const totals = useTotals();
+  const boxLogoUrl = useAppText('box_logo_url');
 
   const boxRef = useRef<TzedakahBoxHandle>(null);
   const [category, setCategory] = useState<CategoryId>('families');
@@ -120,7 +123,7 @@ export default function GivingScreen() {
 
       <View style={styles.stage}>
         <View onLayout={onBoxLayout} style={styles.boxWrap}>
-          <TzedakahBox ref={boxRef} todayTotal={formatCurrency(totals.givenToday)} />
+          <TzedakahBox ref={boxRef} todayTotal={formatCurrency(totals.givenToday)} logoUrl={boxLogoUrl} />
         </View>
 
         <Text style={[styles.hint, { color: colors.textMuted }]}>
@@ -128,6 +131,8 @@ export default function GivingScreen() {
             ? 'נתתם היום. אפשר להוסיף עוד.'
             : 'החליקו מטבע למעלה או הקישו עליו'}
         </Text>
+
+        <HomeMessageCard />
 
         {charging ? <ProcessingBanner message="מבצעים את התרומה..." /> : null}
 
@@ -144,6 +149,15 @@ export default function GivingScreen() {
       <View
         onLayout={onTrayLayout}
         style={[styles.tray, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Pressable
+          accessibilityRole="button"
+          disabled={!card || charging}
+          onPress={() => setCustomOpen(true)}
+          style={({ pressed }) => [styles.customSlot, { opacity: pressed ? 0.7 : 1 }]}>
+          <CustomAmountCoin muted={!card || charging} />
+          <Text style={[styles.customText, { color: colors.textMuted }]}>סכום אחר</Text>
+        </Pressable>
+
         {coinAmounts.map((amount) => (
           <View key={amount} onLayout={onCoinLayout(amount)}>
             <DraggableCoin
@@ -154,18 +168,6 @@ export default function GivingScreen() {
             />
           </View>
         ))}
-
-        <Pressable
-          accessibilityRole="button"
-          disabled={!card || charging}
-          onPress={() => setCustomOpen(true)}
-          style={({ pressed }) => [
-            styles.custom,
-            { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
-          ]}>
-          <Plus size={22} color={colors.textMuted} strokeWidth={1.75} />
-          <Text style={[styles.customText, { color: colors.textMuted }]}>סכום אחר</Text>
-        </Pressable>
       </View>
 
       <CustomAmountModal
@@ -258,18 +260,12 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
   },
-  custom: {
+  customSlot: {
     alignItems: 'center',
-    justifyContent: 'center',
     gap: spacing.xs,
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    borderWidth: 1,
-    borderStyle: 'dashed',
   },
   customText: {
-    fontSize: 9,
-    fontWeight: '700',
+    fontSize: fontSize.xs,
+    fontWeight: '600',
   },
 });
