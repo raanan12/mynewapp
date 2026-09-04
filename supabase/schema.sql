@@ -70,8 +70,16 @@ create table if not exists public.charities (
   description text not null default '',
   allocation integer not null default 100 check (allocation between 0 and 100),
   has_clause_46 boolean not null default false,
-  is_active boolean not null default true
+  is_active boolean not null default true,
+  -- Longer write-up for the transparency screen + optional link to the
+  -- organization's own site. Light markdown subset ("## " sub-headers,
+  -- "**text**" bold) is parsed client-side, not here.
+  long_description text not null default '',
+  website_url text
 );
+
+alter table public.charities add column if not exists long_description text not null default '';
+alter table public.charities add column if not exists website_url text;
 
 insert into public.charities (id, name, category_id, description, allocation, has_clause_46) values
   ('yad-yesomim', 'יד ליתומים', 'orphans', 'ליווי חודשי ליתומים עד גיל 18', 60, true),
@@ -174,8 +182,13 @@ create table if not exists public.approvals (
   title text not null default '',
   image_url text not null,
   year text not null default '',
-  sort_order integer not null default 0
+  sort_order integer not null default 0,
+  rabbi_photo_url text,
+  video_url text
 );
+
+alter table public.approvals add column if not exists rabbi_photo_url text;
+alter table public.approvals add column if not exists video_url text;
 
 insert into public.approvals (id, rabbi_name, title, image_url, year, sort_order) values
   ('a1', 'הרב יצחק זילברשטיין שליט״א', 'מכתב ברכה והסכמה לפעילות הארגון',
@@ -613,3 +626,20 @@ $$;
 revoke all on function public.admin_stats() from public;
 grant execute on function public.admin_stats() to authenticated;
 grant execute on function public.apply_donation(numeric, text, text, text, text) to authenticated;
+
+-- ------------------------------------------------------------- storage ---
+-- Single public bucket for admin-uploaded assets (approval letters/photos,
+-- charity images, future logo/popup art, ...). Public read so the app can
+-- show them without auth; writes are admin-only.
+insert into storage.buckets (id, name, public)
+values ('app-assets', 'app-assets', true)
+on conflict (id) do nothing;
+
+drop policy if exists "public read app-assets" on storage.objects;
+create policy "public read app-assets" on storage.objects
+  for select using (bucket_id = 'app-assets');
+
+drop policy if exists "admin writes app-assets" on storage.objects;
+create policy "admin writes app-assets" on storage.objects
+  for all using (bucket_id = 'app-assets' and public.is_admin())
+  with check (bucket_id = 'app-assets' and public.is_admin());

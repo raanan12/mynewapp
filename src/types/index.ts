@@ -27,6 +27,11 @@ export type Charity = {
   allocation: number;
   /** Whether the org holds a Clause 46 (סעיף 46) tax-deduction approval. */
   hasClause46: boolean;
+  /** Longer write-up shown on the transparency screen. Supports a light
+   *  markdown subset: "## " lines become sub-headers, "**text**" becomes bold. */
+  longDescription: string;
+  /** External site for this organization - shown as a link button when set. */
+  websiteUrl: string | null;
 };
 
 export type DonationStatus = 'completed' | 'pending' | 'failed';
@@ -95,6 +100,10 @@ export type RabbinicalApproval = {
   /** Remote or bundled image of the endorsement letter. */
   imageUrl: string;
   year: string;
+  /** Small photo of the rabbi shown next to the blessing. */
+  rabbiPhotoUrl: string | null;
+  /** Link to a video of the blessing, opened externally. */
+  videoUrl: string | null;
 };
 
 /** Standard envelope for async UI state. */

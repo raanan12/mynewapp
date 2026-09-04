@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
-import { Award, ShieldCheck } from 'lucide-react-native';
+import { Award, ExternalLink, PlayCircle, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
@@ -10,6 +10,49 @@ import { useTheme } from '@/hooks/use-theme';
 import { useApprovals, useAppText, useCategories, useCategoryTotals, useCharities, useTotals } from '@/store/app-store';
 import type { RabbinicalApproval } from '@/types';
 import { formatCurrency } from '@/utils/format';
+
+/** Splits "**bold**" spans out of a plain line of text. */
+function parseBoldSegments(line: string): { text: string; bold: boolean }[] {
+  const parts: { text: string; bold: boolean }[] = [];
+  const regex = /\*\*(.+?)\*\*/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(line))) {
+    if (match.index > lastIndex) parts.push({ text: line.slice(lastIndex, match.index), bold: false });
+    parts.push({ text: match[1], bold: true });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < line.length) parts.push({ text: line.slice(lastIndex), bold: false });
+
+  return parts;
+}
+
+/** Light markdown subset for admin-written copy: "## " sub-headers, "**bold**" spans. */
+function RichText({ text, color }: { text: string; color: string }) {
+  return (
+    <>
+      {text
+        .split('\n')
+        .filter((line) => line.trim().length > 0)
+        .map((line, index) =>
+          line.startsWith('## ') ? (
+            <Text key={index} style={[styles.richHeader, { color }]}>
+              {line.slice(3)}
+            </Text>
+          ) : (
+            <Text key={index} style={[styles.richParagraph, { color }]}>
+              {parseBoldSegments(line).map((part, partIndex) => (
+                <Text key={partIndex} style={part.bold ? styles.richBold : undefined}>
+                  {part.text}
+                </Text>
+              ))}
+            </Text>
+          )
+        )}
+    </>
+  );
+}
 
 /** "לאן הכסף הולך" - approvals, allocation breakdown and receipt info. */
 export default function TrustScreen() {
@@ -24,6 +67,7 @@ export default function TrustScreen() {
   const associationClause46 = useAppText('association_clause46');
   const screenTitle = useAppText('trust_title');
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
+  const [expandedCharity, setExpandedCharity] = useState<string | null>(null);
 
   return (
     <Screen padded={false} edges={['top']}>
@@ -53,13 +97,27 @@ export default function TrustScreen() {
                   transition={200}
                 />
                 <View style={styles.approvalMeta}>
-                  <Text style={[styles.approvalName, { color: colors.text }]} numberOfLines={1}>
-                    {approval.rabbiName}
-                  </Text>
+                  <View style={styles.approvalNameRow}>
+                    {approval.rabbiPhotoUrl ? (
+                      <Image source={{ uri: approval.rabbiPhotoUrl }} style={styles.rabbiAvatar} contentFit="cover" />
+                    ) : null}
+                    <Text style={[styles.approvalName, { color: colors.text }]} numberOfLines={1}>
+                      {approval.rabbiName}
+                    </Text>
+                  </View>
                   <Text style={[styles.approvalTitle, { color: colors.textMuted }]} numberOfLines={2}>
                     {approval.title}
                   </Text>
-                  <Text style={[styles.approvalYear, { color: colors.accent }]}>{approval.year}</Text>
+                  <View style={styles.approvalFooterRow}>
+                    <Text style={[styles.approvalYear, { color: colors.accent }]}>{approval.year}</Text>
+                    {approval.videoUrl ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() => approval.videoUrl && void Linking.openURL(approval.videoUrl)}>
+                        <PlayCircle size={16} color={colors.accent} strokeWidth={1.75} />
+                      </Pressable>
+                    ) : null}
+                  </View>
                 </View>
               </Card>
             </Pressable>
@@ -96,24 +154,57 @@ export default function TrustScreen() {
             <Text style={[styles.categoryName, { color: colors.text }]}>{category.label}</Text>
             {charities
               .filter((charity) => charity.categoryId === category.id)
-              .map((charity) => (
-                <View key={charity.id} style={styles.charityRow}>
-                  <View style={styles.charityInfo}>
-                    <Text style={[styles.charityName, { color: colors.text }]}>{charity.name}</Text>
-                    <Text style={[styles.charityDesc, { color: colors.textMuted }]}>
-                      {charity.description}
-                    </Text>
-                  </View>
-                  <View style={styles.charityTags}>
-                    <Text style={[styles.allocation, { color: colors.accent }]}>
-                      {charity.allocation}%
-                    </Text>
-                    {charity.hasClause46 ? (
-                      <Award size={14} color={colors.success} strokeWidth={1.75} />
+              .map((charity) => {
+                const expanded = expandedCharity === charity.id;
+                const hasMore = Boolean(charity.longDescription.trim());
+
+                return (
+                  <View key={charity.id} style={styles.charityBlock}>
+                    <View style={styles.charityRow}>
+                      <View style={styles.charityInfo}>
+                        <Text style={[styles.charityName, { color: colors.text }]}>{charity.name}</Text>
+                        <Text style={[styles.charityDesc, { color: colors.textMuted }]}>
+                          {charity.description}
+                        </Text>
+                      </View>
+                      <View style={styles.charityTags}>
+                        <Text style={[styles.allocation, { color: colors.accent }]}>
+                          {charity.allocation}%
+                        </Text>
+                        {charity.hasClause46 ? (
+                          <Award size={14} color={colors.success} strokeWidth={1.75} />
+                        ) : null}
+                      </View>
+                    </View>
+
+                    {hasMore || charity.websiteUrl ? (
+                      <View style={styles.charityActions}>
+                        {hasMore ? (
+                          <Pressable onPress={() => setExpandedCharity(expanded ? null : charity.id)}>
+                            <Text style={[styles.charityLink, { color: colors.accent }]}>
+                              {expanded ? 'פחות' : 'עוד'}
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                        {charity.websiteUrl ? (
+                          <Pressable
+                            style={styles.charityWebsite}
+                            onPress={() => charity.websiteUrl && void Linking.openURL(charity.websiteUrl)}>
+                            <ExternalLink size={13} color={colors.accent} strokeWidth={1.75} />
+                            <Text style={[styles.charityLink, { color: colors.accent }]}>לאתר הארגון</Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ) : null}
+
+                    {expanded && hasMore ? (
+                      <View style={styles.charityLongDescription}>
+                        <RichText text={charity.longDescription} color={colors.textMuted} />
+                      </View>
                     ) : null}
                   </View>
-                </View>
-              ))}
+                );
+              })}
           </Card>
         ))}
       </ScrollView>
@@ -124,6 +215,14 @@ export default function TrustScreen() {
             <>
               <Image source={{ uri: preview.imageUrl }} style={styles.previewImage} contentFit="contain" />
               <Text style={styles.previewCaption}>{preview.rabbiName}</Text>
+              {preview.videoUrl ? (
+                <Pressable
+                  style={styles.previewVideoButton}
+                  onPress={() => preview.videoUrl && void Linking.openURL(preview.videoUrl)}>
+                  <PlayCircle size={18} color={palette.cream} strokeWidth={1.75} />
+                  <Text style={styles.previewCaption}>צפייה בברכה</Text>
+                </Pressable>
+              ) : null}
             </>
           ) : null}
         </Pressable>
@@ -181,10 +280,26 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     gap: 2,
   },
+  approvalNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  rabbiAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
   approvalName: {
+    flex: 1,
     fontSize: fontSize.sm,
     fontWeight: '800',
     textAlign: 'right',
+  },
+  approvalFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   approvalTitle: {
     fontSize: fontSize.xs,
@@ -226,11 +341,14 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginBottom: spacing.sm,
   },
+  charityBlock: {
+    paddingVertical: spacing.xs,
+  },
   charityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.xs + 2,
+    paddingVertical: spacing.xs,
   },
   charityInfo: {
     flex: 1,
@@ -253,6 +371,39 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '900',
   },
+  charityActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.md,
+  },
+  charityWebsite: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  charityLink: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+  },
+  charityLongDescription: {
+    marginTop: spacing.xs,
+    paddingTop: spacing.xs,
+  },
+  richHeader: {
+    fontSize: fontSize.sm,
+    fontWeight: '800',
+    textAlign: 'right',
+    marginTop: spacing.xs,
+  },
+  richParagraph: {
+    fontSize: fontSize.xs,
+    lineHeight: 20,
+    textAlign: 'right',
+    marginTop: 2,
+  },
+  richBold: {
+    fontWeight: '800',
+  },
   previewBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(28,25,23,0.94)',
@@ -269,5 +420,10 @@ const styles = StyleSheet.create({
     color: palette.cream,
     fontSize: fontSize.md,
     fontWeight: '700',
+  },
+  previewVideoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
 });

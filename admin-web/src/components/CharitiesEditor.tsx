@@ -10,6 +10,8 @@ type CharityRow = {
   allocation: number;
   has_clause_46: boolean;
   is_active: boolean;
+  long_description: string;
+  website_url: string | null;
 };
 
 type CategoryOption = { id: string; label: string };
@@ -59,7 +61,7 @@ export function CharitiesEditor() {
     await load();
   }
 
-  function updateField(id: string, field: keyof CharityRow, value: string | boolean | number) {
+  function updateField(id: string, field: keyof CharityRow, value: string | boolean | number | null) {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
   }
 
@@ -73,6 +75,8 @@ export function CharitiesEditor() {
         allocation: row.allocation,
         has_clause_46: row.has_clause_46,
         is_active: row.is_active,
+        long_description: row.long_description,
+        website_url: row.website_url?.trim() || null,
       })
       .eq('id', row.id);
 
@@ -177,6 +181,23 @@ export function CharitiesEditor() {
                 onChange={(event) => updateField(row.id, 'description', event.target.value)}
               />
             </div>
+          </div>
+          <div className="field">
+            <label>קישור לאתר הארגון (אופציונלי)</label>
+            <input
+              value={row.website_url ?? ''}
+              onChange={(event) => updateField(row.id, 'website_url', event.target.value)}
+              placeholder="https://..."
+              dir="ltr"
+            />
+          </div>
+          <div className="field">
+            <label>תיאור מורחב (אופציונלי) - שורה שמתחילה ב-## הופכת לכותרת, **טקסט** יודגש</label>
+            <textarea
+              rows={5}
+              value={row.long_description}
+              onChange={(event) => updateField(row.id, 'long_description', event.target.value)}
+            />
           </div>
           <label className="checkbox-row">
             <input

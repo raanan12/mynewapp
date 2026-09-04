@@ -46,6 +46,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'ליווי חודשי ליתומים עד גיל 18',
     allocation: 60,
     hasClause46: true,
+    longDescription: '',
+    websiteUrl: null,
   },
   {
     id: 'beit-almanot',
@@ -54,6 +56,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'סיוע כלכלי ורגשי לאלמנות',
     allocation: 40,
     hasClause46: true,
+    longDescription: '',
+    websiteUrl: null,
   },
   {
     id: 'ezer-marpe',
@@ -62,6 +66,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'ציוד רפואי והסעות לטיפולים',
     allocation: 55,
     hasClause46: true,
+    longDescription: '',
+    websiteUrl: null,
   },
   {
     id: 'refuah-vechesed',
@@ -70,6 +76,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'תמיכה במשפחות של חולים קשים',
     allocation: 45,
     hasClause46: true,
+    longDescription: '',
+    websiteUrl: null,
   },
   {
     id: 'keren-amelei-torah',
@@ -78,6 +86,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'מלגות קיום לאברכים',
     allocation: 100,
     hasClause46: true,
+    longDescription: '',
+    websiteUrl: null,
   },
   {
     id: 'lechem-chukeinu',
@@ -86,6 +96,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'סלי מזון שבועיים למשפחות',
     allocation: 70,
     hasClause46: true,
+    longDescription: '',
+    websiteUrl: null,
   },
   {
     id: 'chesed-bakehila',
@@ -94,6 +106,8 @@ export const defaultCharities: readonly Charity[] = [
     description: 'תשלומי חשמל, מים וארנונה',
     allocation: 30,
     hasClause46: false,
+    longDescription: '',
+    websiteUrl: null,
   },
 ] as const;
 
@@ -114,6 +128,8 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
     title: 'מכתב ברכה והסכמה לפעילות הארגון',
     imageUrl: 'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%94%D7%A1%D7%9B%D7%9E%D7%94',
     year: 'תשפ״ה',
+    rabbiPhotoUrl: null,
+    videoUrl: null,
   },
   {
     id: 'a2',
@@ -121,6 +137,8 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
     title: 'אישור על ניהול כספי הצדקה כהלכה',
     imageUrl: 'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%90%D7%99%D7%A9%D7%95%D7%A8',
     year: 'תשפ״ד',
+    rabbiPhotoUrl: null,
+    videoUrl: null,
   },
   {
     id: 'a3',
@@ -128,6 +146,8 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
     title: 'הסכמה לגביית מעשר כספים דרך האפליקציה',
     imageUrl: 'https://placehold.co/900x1200/1A2B4C/D4AF37/png?text=%D7%9E%D7%9B%D7%AA%D7%91',
     year: 'תשפ״ד',
+    rabbiPhotoUrl: null,
+    videoUrl: null,
   },
 ] as const;
 

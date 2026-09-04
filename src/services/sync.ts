@@ -142,6 +142,8 @@ export async function pullContent(): Promise<void> {
           description: row.description,
           allocation: row.allocation,
           hasClause46: row.has_clause_46,
+          longDescription: row.long_description,
+          websiteUrl: row.website_url,
         }))
       : current.charities,
     approvals: approvalRows?.length
@@ -150,6 +152,8 @@ export async function pullContent(): Promise<void> {
           rabbiName: row.rabbi_name,
           title: row.title,
           imageUrl: row.image_url,
+          rabbiPhotoUrl: row.rabbi_photo_url,
+          videoUrl: row.video_url,
           year: row.year,
         }))
       : current.approvals,

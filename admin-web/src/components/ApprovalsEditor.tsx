@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
+import { uploadAsset } from '../lib/upload';
 
 type ApprovalRow = {
   id: string;
@@ -9,20 +10,22 @@ type ApprovalRow = {
   image_url: string;
   year: string;
   sort_order: number;
+  rabbi_photo_url: string | null;
+  video_url: string | null;
 };
 
 const emptyDraft = { rabbiName: '', title: '', imageUrl: '', year: '' };
 
 /**
- * Rabbinical approval letters. `image_url` must be a link to an already
- * hosted image (e.g. uploaded to Supabase Storage from its dashboard) - this
- * screen does not upload files itself.
+ * Rabbinical approval letters. `image_url` can be filled either by pasting
+ * a link or uploading a file directly (to the `app-assets` bucket).
  */
 export function ApprovalsEditor() {
   const [rows, setRows] = useState<ApprovalRow[]>([]);
   const [draft, setDraft] = useState(emptyDraft);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   async function load() {
     const { data } = await supabase.from('approvals').select('*').order('sort_order');
@@ -55,8 +58,22 @@ export function ApprovalsEditor() {
     await load();
   }
 
-  function updateField(id: string, field: keyof ApprovalRow, value: string | number) {
+  function updateField(id: string, field: keyof ApprovalRow, value: string | number | null) {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+  }
+
+  async function uploadFile(id: string, field: 'image_url' | 'rabbi_photo_url', file: File) {
+    setUploadingId(id);
+    setError(null);
+
+    try {
+      const url = await uploadAsset(file, field === 'image_url' ? 'approvals' : 'rabbi-photos');
+      updateField(id, field, url);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'העלאת הקובץ נכשלה.');
+    } finally {
+      setUploadingId(null);
+    }
   }
 
   async function saveRow(row: ApprovalRow) {
@@ -68,6 +85,8 @@ export function ApprovalsEditor() {
         image_url: row.image_url,
         year: row.year,
         sort_order: row.sort_order,
+        rabbi_photo_url: row.rabbi_photo_url?.trim() || null,
+        video_url: row.video_url?.trim() || null,
       })
       .eq('id', row.id);
 
@@ -92,7 +111,7 @@ export function ApprovalsEditor() {
       <div className="section-title">הוספת הסכמה</div>
       <div className="card">
         <p className="muted" style={{ marginTop: 0 }}>
-          יש להעלות את תמונת המכתב לאחסון (Supabase Storage) ולהדביק כאן את הקישור הציבורי אליה.
+          אפשר להדביק קישור לתמונת המכתב כאן, ולאחר ההוספה להעלות קובץ ישירות מהרשומה שתופיע למטה.
         </p>
         <div className="form-grid">
           <div>
@@ -141,10 +160,6 @@ export function ApprovalsEditor() {
                 <input value={row.year} onChange={(event) => updateField(row.id, 'year', event.target.value)} />
               </div>
               <div>
-                <label>קישור לתמונה</label>
-                <input value={row.image_url} onChange={(event) => updateField(row.id, 'image_url', event.target.value)} />
-              </div>
-              <div>
                 <label>סדר תצוגה</label>
                 <input
                   type="number"
@@ -154,6 +169,69 @@ export function ApprovalsEditor() {
               </div>
             </div>
           </div>
+
+          <div className="field">
+            <label>תמונת המכתב - קישור או קובץ</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                style={{ flex: 1 }}
+                value={row.image_url}
+                onChange={(event) => updateField(row.id, 'image_url', event.target.value)}
+                dir="ltr"
+              />
+              <label className="btn secondary" style={{ cursor: 'pointer' }}>
+                {uploadingId === row.id ? 'מעלה...' : 'העלאת קובץ'}
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  style={{ display: 'none' }}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void uploadFile(row.id, 'image_url', file);
+                    event.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="field">
+            <label>תמונת הרב (אופציונלי) - קישור או קובץ</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                style={{ flex: 1 }}
+                value={row.rabbi_photo_url ?? ''}
+                onChange={(event) => updateField(row.id, 'rabbi_photo_url', event.target.value)}
+                dir="ltr"
+              />
+              <label className="btn secondary" style={{ cursor: 'pointer' }}>
+                {uploadingId === row.id ? 'מעלה...' : 'העלאת קובץ'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void uploadFile(row.id, 'rabbi_photo_url', file);
+                    event.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="field">
+            <label>קישור לסרטון (אופציונלי)</label>
+            <input
+              value={row.video_url ?? ''}
+              onChange={(event) => updateField(row.id, 'video_url', event.target.value)}
+              placeholder="https://..."
+              dir="ltr"
+            />
+          </div>
+
+          {error ? <p className="error">{error}</p> : null}
+
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             <button className="btn secondary" onClick={() => void saveRow(row)}>
               {savedId === row.id ? 'נשמר ✓' : 'שמירה'}

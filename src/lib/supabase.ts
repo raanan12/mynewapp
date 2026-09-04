@@ -86,6 +86,8 @@ export type CharityRow = {
   allocation: number;
   has_clause_46: boolean;
   is_active: boolean;
+  long_description: string;
+  website_url: string | null;
 };
 
 export type QuoteRow = {
@@ -102,6 +104,8 @@ export type ApprovalRow = {
   image_url: string;
   year: string;
   sort_order: number;
+  rabbi_photo_url: string | null;
+  video_url: string | null;
 };
 
 export type WalletTransactionRow = {
