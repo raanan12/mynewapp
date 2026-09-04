@@ -19,6 +19,8 @@ export const palette = {
   /** Richer gold - decorative use only (coin metal, box trim). */
   goldRich: '#D4AF37',
   goldDeep: '#A8861F',
+  /** Bright highlight for the metal-frame bevel on the tzedakah box. */
+  goldLight: '#F3DFA3',
   /** Pearl/silver - the "custom amount" coin, so it reads as distinct from
    *  the fixed-amount gold coins rather than as one more denomination. */
   silver: '#E7E5E2',

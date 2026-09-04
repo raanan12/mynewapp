@@ -19,12 +19,14 @@ export type TzedakahBoxHandle = {
 };
 
 export const BOX_WIDTH = 200;
-export const BOX_HEIGHT = 210;
+export const BOX_HEIGHT = 220;
+/** Thickness of the gold metal frame around the glass panel. */
+const FRAME_WIDTH = 6;
 /** Vertical offset of the slot from the box center - coins aim here. */
 export const SLOT_OFFSET_Y = -BOX_HEIGHT / 2 + 26;
 
 type TzedakahBoxProps = {
-  /** Total given today, shown on the frosted panel. */
+  /** Total given today, shown on the gold plaque. */
   todayTotal: string;
   /** Admin-uploaded organization logo (app_texts.box_logo_url) - falls back
    *  to the bundled app icon when empty. */
@@ -32,9 +34,9 @@ type TzedakahBoxProps = {
 };
 
 /**
- * Frosted acrylic Tzedakah box. Built from layered views + a real BlurView
- * rather than a 3D engine, so it stays cheap on older devices and works in
- * Expo Go.
+ * Glass Tzedakah box in a gold metal frame. Built from layered views + a
+ * real BlurView rather than a 3D engine, so it stays cheap on older devices
+ * and works in Expo Go.
  */
 export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(function TzedakahBox(
   { todayTotal, logoUrl },
@@ -65,51 +67,68 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
 
   return (
     <View style={styles.root}>
-      <Animated.View style={[styles.body, bodyStyle]}>
-        <BlurView intensity={45} tint="light" style={StyleSheet.absoluteFill} />
+      <Animated.View style={[styles.frame, bodyStyle]}>
         <LinearGradient
-          colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.08)']}
+          colors={[palette.goldLight, palette.goldRich, palette.goldDeep, palette.goldRich]}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
 
-        <View style={styles.lid}>
-          <View style={styles.slotHalo} pointerEvents="none">
-            <Animated.View style={[styles.ripple, rippleStyle]} />
-          </View>
-          <View style={styles.slot} />
-        </View>
+        <View style={styles.glass}>
+          <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.65)', 'rgba(232,238,255,0.2)', 'rgba(255,240,250,0.25)']}
+            start={{ x: 0.1, y: 0 }}
+            end={{ x: 0.9, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
 
-        <View style={styles.front}>
-          <View style={styles.plate}>
-            {logoUrl ? (
-              <Image source={{ uri: logoUrl }} style={styles.logo} contentFit="contain" />
-            ) : (
-              <Image
-                source={require('../../assets/images/icon.png')}
-                style={styles.logo}
-                contentFit="contain"
+          {/* Scattered light glints - the touch that reads as "glass", not plastic. */}
+          <View style={[styles.glint, styles.glintA]} pointerEvents="none" />
+          <View style={[styles.glint, styles.glintB]} pointerEvents="none" />
+          <View style={[styles.glint, styles.glintC]} pointerEvents="none" />
+
+          <View style={styles.lid}>
+            <View style={styles.slotRim}>
+              <View style={styles.slotHalo} pointerEvents="none">
+                <Animated.View style={[styles.ripple, rippleStyle]} />
+              </View>
+              <View style={styles.slot} />
+            </View>
+          </View>
+
+          <View style={styles.front}>
+            <View style={styles.plate}>
+              {logoUrl ? (
+                <Image source={{ uri: logoUrl }} style={styles.logo} contentFit="contain" />
+              ) : (
+                <Image
+                  source={require('../../assets/images/icon.png')}
+                  style={styles.logo}
+                  contentFit="contain"
+                />
+              )}
+              <View style={styles.plateRule} />
+              <Text style={styles.plateSub}>נתרם היום</Text>
+            </View>
+
+            <View style={styles.amountBadge}>
+              <LinearGradient
+                colors={[palette.goldLight, palette.gold, palette.goldDeep]}
+                start={{ x: 0.15, y: 0 }}
+                end={{ x: 0.85, y: 1 }}
+                style={StyleSheet.absoluteFill}
               />
-            )}
-            <View style={styles.plateRule} />
-            <Text style={styles.plateSub}>נתרם היום</Text>
-            <Text style={styles.plateAmount}>{todayTotal}</Text>
+              <Text style={styles.amountText}>{todayTotal}</Text>
+            </View>
           </View>
 
-          <View style={styles.rivetRow}>
-            {[0, 1, 2, 3].map((index) => (
-              <View key={index} style={styles.rivet} />
-            ))}
-          </View>
+          <View style={[styles.corner, styles.cornerTL]} pointerEvents="none" />
+          <View style={[styles.corner, styles.cornerTR]} pointerEvents="none" />
+          <View style={[styles.corner, styles.cornerBL]} pointerEvents="none" />
+          <View style={[styles.corner, styles.cornerBR]} pointerEvents="none" />
         </View>
-
-        {/* Ornate gold corner accents - the touch that reads as "crafted
-         *  box" rather than a flat rounded rectangle. */}
-        <View style={[styles.corner, styles.cornerTL]} pointerEvents="none" />
-        <View style={[styles.corner, styles.cornerTR]} pointerEvents="none" />
-        <View style={[styles.corner, styles.cornerBL]} pointerEvents="none" />
-        <View style={[styles.corner, styles.cornerBR]} pointerEvents="none" />
       </Animated.View>
 
       <View style={styles.shadow} pointerEvents="none" />
@@ -124,25 +143,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: {
+  frame: {
     width: BOX_WIDTH,
     height: BOX_HEIGHT,
+    padding: FRAME_WIDTH,
     borderRadius: radius.lg,
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: 'rgba(197,160,89,0.55)',
     shadowColor: palette.charcoal,
     shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.16,
     shadowRadius: 24,
     elevation: 10,
   },
+  glass: {
+    flex: 1,
+    borderRadius: radius.lg - FRAME_WIDTH / 2,
+    overflow: 'hidden',
+  },
+  glint: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+  },
+  glintA: {
+    width: 5,
+    height: 5,
+    top: 30,
+    left: 22,
+    opacity: 0.85,
+  },
+  glintB: {
+    width: 3,
+    height: 3,
+    top: 66,
+    right: 30,
+    opacity: 0.7,
+  },
+  glintC: {
+    width: 4,
+    height: 4,
+    bottom: 46,
+    left: 40,
+    opacity: 0.6,
+  },
   lid: {
-    height: 52,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(197,160,89,0.35)',
+    borderBottomColor: 'rgba(197,160,89,0.4)',
+  },
+  slotRim: {
+    padding: 3,
+    borderRadius: radius.pill,
+    backgroundColor: palette.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   slotHalo: {
     position: 'absolute',
@@ -160,17 +219,16 @@ const styles = StyleSheet.create({
     borderColor: palette.gold,
   },
   slot: {
-    width: 96,
-    height: 11,
+    width: 90,
+    height: 9,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(28,25,23,0.65)',
-    borderWidth: 1,
-    borderColor: 'rgba(197,160,89,0.5)',
+    backgroundColor: 'rgba(28,25,23,0.7)',
   },
   front: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
   },
   plate: {
@@ -180,7 +238,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: 'rgba(197,160,89,0.4)',
-    backgroundColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: 'rgba(255,255,255,0.55)',
   },
   logo: {
     width: 72,
@@ -196,24 +254,18 @@ const styles = StyleSheet.create({
     color: palette.taupe,
     fontSize: fontSize.xs,
   },
-  plateAmount: {
+  amountBadge: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  amountText: {
     color: palette.charcoal,
-    fontSize: fontSize.lg,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  rivetRow: {
-    position: 'absolute',
-    bottom: spacing.sm,
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  rivet: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: palette.gold,
-    opacity: 0.7,
+    fontSize: fontSize.md,
+    fontWeight: '900',
   },
   shadow: {
     position: 'absolute',
@@ -226,35 +278,34 @@ const styles = StyleSheet.create({
   },
   corner: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    borderColor: palette.gold,
-    opacity: 0.8,
+    width: 22,
+    height: 22,
+    borderColor: 'rgba(197,160,89,0.7)',
   },
   cornerTL: {
-    top: 4,
-    left: 4,
+    top: 6,
+    left: 6,
     borderTopWidth: 2,
     borderLeftWidth: 2,
     borderTopLeftRadius: radius.sm,
   },
   cornerTR: {
-    top: 4,
-    right: 4,
+    top: 6,
+    right: 6,
     borderTopWidth: 2,
     borderRightWidth: 2,
     borderTopRightRadius: radius.sm,
   },
   cornerBL: {
-    bottom: 4,
-    left: 4,
+    bottom: 6,
+    left: 6,
     borderBottomWidth: 2,
     borderLeftWidth: 2,
     borderBottomLeftRadius: radius.sm,
   },
   cornerBR: {
-    bottom: 4,
-    right: 4,
+    bottom: 6,
+    right: 6,
     borderBottomWidth: 2,
     borderRightWidth: 2,
     borderBottomRightRadius: radius.sm,
