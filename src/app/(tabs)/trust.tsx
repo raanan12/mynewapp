@@ -284,6 +284,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    minHeight: 20,
   },
   rabbiAvatar: {
     width: 20,
@@ -300,8 +301,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 18,
   },
   approvalTitle: {
+    // Fixed to exactly 2 lines' worth of space (lineHeight * 2) so a
+    // one-line title doesn't leave its card shorter than its neighbors -
+    // cards sit in a horizontal ScrollView row, which in RN does not
+    // stretch siblings to a shared height.
+    height: 32,
     fontSize: fontSize.xs,
     lineHeight: 16,
     textAlign: 'right',
