@@ -56,8 +56,17 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
     },
   }));
 
+  // Static isometric tilt (perspective + rotateX/Y/Z) plus the coin-drop
+  // bounce, combined in one transform array - RN has no `preserve-3d`, so
+  // the whole box rotates as one rigid plane rather than separate faces.
   const bodyStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + bounce.value * 0.03 }],
+    transform: [
+      { perspective: 900 },
+      { rotateY: '-12deg' },
+      { rotateX: '8deg' },
+      { rotateZ: '1deg' },
+      { scale: 1 + bounce.value * 0.03 },
+    ],
   }));
 
   const rippleStyle = useAnimatedStyle(() => ({
@@ -67,9 +76,11 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
 
   return (
     <View style={styles.root}>
+      <View style={styles.glow} pointerEvents="none" />
+
       <Animated.View style={[styles.frame, bodyStyle]}>
         <LinearGradient
-          colors={[palette.goldLight, palette.goldRich, palette.goldDeep, palette.goldRich]}
+          colors={[palette.frameGoldLight, palette.frameGold, palette.frameGoldDeep, palette.frameGold]}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={StyleSheet.absoluteFill}
@@ -115,7 +126,7 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
 
             <View style={styles.amountBadge}>
               <LinearGradient
-                colors={[palette.goldLight, palette.gold, palette.goldDeep]}
+                colors={[palette.frameGoldLight, palette.frameGold, palette.frameGoldDeep]}
                 start={{ x: 0.15, y: 0 }}
                 end={{ x: 0.85, y: 1 }}
                 style={StyleSheet.absoluteFill}
@@ -143,15 +154,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  glow: {
+    position: 'absolute',
+    width: BOX_WIDTH * 1.3,
+    height: BOX_HEIGHT * 1.05,
+    borderRadius: 999,
+    backgroundColor: palette.frameGold,
+    opacity: 0.22,
+    shadowColor: palette.frameGold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 40,
+  },
   frame: {
     width: BOX_WIDTH,
     height: BOX_HEIGHT,
     padding: FRAME_WIDTH,
     borderRadius: radius.lg,
+    // Layered depth: a tight dark shadow for contact, this soft wide one for
+    // the "floating in 3D space" read that a single shadow can't give.
     shadowColor: palette.charcoal,
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.16,
-    shadowRadius: 24,
+    shadowOffset: { width: 6, height: 20 },
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
     elevation: 10,
   },
   glass: {
@@ -253,6 +278,9 @@ const styles = StyleSheet.create({
   plateSub: {
     color: palette.taupe,
     fontSize: fontSize.xs,
+    textShadowColor: 'rgba(255,255,255,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   amountBadge: {
     paddingVertical: spacing.xs,
@@ -266,15 +294,21 @@ const styles = StyleSheet.create({
     color: palette.charcoal,
     fontSize: fontSize.md,
     fontWeight: '900',
+    textShadowColor: 'rgba(255,255,255,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   shadow: {
     position: 'absolute',
-    bottom: -14,
-    width: BOX_WIDTH * 0.8,
-    height: 14,
+    bottom: -12,
+    left: '58%',
+    width: BOX_WIDTH * 0.75,
+    height: 16,
+    marginLeft: -(BOX_WIDTH * 0.75) / 2,
     borderRadius: radius.pill,
     backgroundColor: palette.charcoal,
-    opacity: 0.08,
+    opacity: 0.1,
+    transform: [{ scaleX: 1.15 }],
   },
   corner: {
     position: 'absolute',

@@ -21,6 +21,10 @@ export const palette = {
   goldDeep: '#A8861F',
   /** Bright highlight for the metal-frame bevel on the tzedakah box. */
   goldLight: '#F3DFA3',
+  /** Exact brass/gold gradient stops for the tzedakah box frame. */
+  frameGoldLight: '#F3E5AB',
+  frameGold: '#E6C875',
+  frameGoldDeep: '#996515',
   /** Pearl/silver - the "custom amount" coin, so it reads as distinct from
    *  the fixed-amount gold coins rather than as one more denomination. */
   silver: '#E7E5E2',
