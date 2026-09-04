@@ -21,6 +21,7 @@ export function CharitiesEditor() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [draft, setDraft] = useState(emptyDraft);
   const [error, setError] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   async function load() {
     const [{ data: charities }, { data: cats }] = await Promise.all([
@@ -75,7 +76,14 @@ export function CharitiesEditor() {
       })
       .eq('id', row.id);
 
-    if (updateError) setError(updateError.message);
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    setError(null);
+    setSavedId(row.id);
+    setTimeout(() => setSavedId((current) => (current === row.id ? null : current)), 1500);
   }
 
   async function deleteCharity(id: string) {
@@ -189,7 +197,7 @@ export function CharitiesEditor() {
           </label>
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             <button className="btn secondary" onClick={() => void saveRow(row)}>
-              שמירה
+              {savedId === row.id ? 'נשמר ✓' : 'שמירה'}
             </button>
             <button className="btn danger" onClick={() => void deleteCharity(row.id)}>
               מחיקה

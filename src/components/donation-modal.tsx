@@ -1,11 +1,11 @@
-import { CheckCircle2, Flame } from 'lucide-react-native';
+import { CheckCircle2, Flame, Mail } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { Button } from '@/components/ui/button';
 import { fontSize, palette, radius, spacing } from '@/constants/theme';
-import { useDailyQuote } from '@/hooks/use-daily-quote';
+import { useDonationQuote } from '@/hooks/use-donation-quote';
 import { useTheme } from '@/hooks/use-theme';
 import { categoryLabel } from '@/store/app-store';
 import type { Donation } from '@/types';
@@ -16,21 +16,14 @@ type DonationModalProps = {
   streak: number;
   onClose: () => void;
   onSaveDedication: (donationId: string, dedication: string) => void;
-  onShareReceipt: (donation: Donation) => void;
 };
 
 const DEDICATION_PRESETS = ['לרפואת ', 'לעילוי נשמת ', 'להצלחת ', 'לזיווג הגון ל'];
 
 /** Confirmation shown right after a coin drops: quote, streak and dedication. */
-export function DonationModal({
-  donation,
-  streak,
-  onClose,
-  onSaveDedication,
-  onShareReceipt,
-}: DonationModalProps) {
+export function DonationModal({ donation, streak, onClose, onSaveDedication }: DonationModalProps) {
   const { colors } = useTheme();
-  const quote = useDailyQuote();
+  const quote = useDonationQuote(donation?.id ?? null);
   const [dedication, setDedication] = useState('');
 
   function close() {
@@ -103,15 +96,14 @@ export function DonationModal({
               ))}
             </View>
 
-            <View style={styles.actions}>
-              <Button title="סיום" onPress={close} style={styles.flex} />
-              <Button
-                title="קבלה"
-                variant="secondary"
-                onPress={() => onShareReceipt(donation)}
-                style={styles.flex}
-              />
+            <View style={[styles.receiptNote, { backgroundColor: colors.surfaceAlt }]}>
+              <Mail size={14} color={colors.textMuted} strokeWidth={1.75} />
+              <Text style={[styles.receiptNoteText, { color: colors.textMuted }]}>
+                הקבלה נשלחה במייל
+              </Text>
             </View>
+
+            <Button title="סיום" onPress={close} style={styles.doneButton} />
           </Animated.View>
         ) : null}
       </KeyboardAvoidingView>
@@ -217,12 +209,20 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     fontWeight: '600',
   },
-  actions: {
+  receiptNote: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
     marginTop: spacing.sm,
   },
-  flex: {
-    flex: 1,
+  receiptNoteText: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+  },
+  doneButton: {
+    marginTop: spacing.sm,
   },
 });

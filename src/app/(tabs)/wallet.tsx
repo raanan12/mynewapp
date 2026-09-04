@@ -11,13 +11,14 @@ import { fontSize, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { kesherMode } from '@/services/kesher';
 import { removeSavedCard } from '@/services/wallet';
-import { useAppStore } from '@/store/app-store';
+import { useAppStore, useAppText } from '@/store/app-store';
 
 export default function WalletScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
   const card = useAppStore((state) => state.card);
+  const screenTitle = useAppText('wallet_title');
   const [removingCard, setRemovingCard] = useState(false);
 
   function confirmRemoveCard() {
@@ -42,7 +43,7 @@ export default function WalletScreen() {
   return (
     <Screen padded={false} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>כרטיס אשראי</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{screenTitle}</Text>
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>אמצעי תשלום</Text>
         {card ? (

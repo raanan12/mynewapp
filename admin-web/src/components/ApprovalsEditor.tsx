@@ -22,6 +22,7 @@ export function ApprovalsEditor() {
   const [rows, setRows] = useState<ApprovalRow[]>([]);
   const [draft, setDraft] = useState(emptyDraft);
   const [error, setError] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   async function load() {
     const { data } = await supabase.from('approvals').select('*').order('sort_order');
@@ -70,7 +71,14 @@ export function ApprovalsEditor() {
       })
       .eq('id', row.id);
 
-    if (updateError) setError(updateError.message);
+    if (updateError) {
+      setError(updateError.message);
+      return;
+    }
+
+    setError(null);
+    setSavedId(row.id);
+    setTimeout(() => setSavedId((current) => (current === row.id ? null : current)), 1500);
   }
 
   async function deleteApproval(id: string) {
@@ -148,7 +156,7 @@ export function ApprovalsEditor() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             <button className="btn secondary" onClick={() => void saveRow(row)}>
-              שמירה
+              {savedId === row.id ? 'נשמר ✓' : 'שמירה'}
             </button>
             <button className="btn danger" onClick={() => void deleteApproval(row.id)}>
               מחיקה

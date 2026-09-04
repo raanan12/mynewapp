@@ -31,6 +31,10 @@ const SECTIONS: { title: string; keys: string[] }[] = [
     title: 'כותרות מסך התקנון',
     keys: ['terms_header_title', 'terms_page_title'],
   },
+  {
+    title: 'כותרות מסכים נוספים',
+    keys: ['trust_title', 'wallet_title'],
+  },
 ];
 
 const KEY_LABELS: Record<string, string> = {
@@ -51,6 +55,8 @@ const KEY_LABELS: Record<string, string> = {
   history_empty_body: 'טקסט מצב ריק',
   terms_header_title: 'כותרת חלון התקנון',
   terms_page_title: 'כותרת בתוך העמוד',
+  trust_title: 'כותרת מסך שקיפות ("לאן הכסף הולך")',
+  wallet_title: 'כותרת מסך הכרטיס',
 };
 
 /** Free-form UI copy - tab bar labels and the association/tax-receipt

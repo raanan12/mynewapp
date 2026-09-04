@@ -22,12 +22,13 @@ export default function TrustScreen() {
   const associationName = useAppText('association_name');
   const associationNumber = useAppText('association_number');
   const associationClause46 = useAppText('association_clause46');
+  const screenTitle = useAppText('trust_title');
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
 
   return (
     <Screen padded={false} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>לאן הכסף הולך</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{screenTitle}</Text>
 
         <Card elevated>
           <View style={styles.badgeRow}>

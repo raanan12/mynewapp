@@ -213,6 +213,8 @@ insert into public.app_texts (id, value) values
   ('history_empty_body', 'כל תרומה תופיע כאן יחד עם הקבלה שלה.'),
   ('terms_header_title', 'תקנון ותנאי שימוש'),
   ('terms_page_title', 'תקנון, תנאי שימוש ומדיניות פרטיות'),
+  ('trust_title', 'לאן הכסף הולך'),
+  ('wallet_title', 'כרטיס אשראי'),
   ('terms_version', '1.0')
 on conflict (id) do nothing;
 

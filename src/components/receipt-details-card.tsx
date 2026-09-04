@@ -102,6 +102,9 @@ export function ReceiptDetailsCard() {
             style={inputStyle}
             textAlign="left"
           />
+          <Text style={[styles.idHint, { color: colors.textMuted }]}>
+            לצורך קבלה המוכרת לצרכי מס
+          </Text>
 
           {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
 
@@ -160,6 +163,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     minHeight: 46,
     textAlign: 'right',
+  },
+  idHint: {
+    fontSize: fontSize.xs,
+    textAlign: 'right',
+    marginTop: -spacing.xs,
+    marginBottom: spacing.sm,
   },
   error: {
     fontSize: fontSize.xs,

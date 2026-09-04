@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { AlertCircle, CreditCard, Plus } from 'lucide-react-native';
+import { AlertCircle, Bell, Plus } from 'lucide-react-native';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
@@ -15,7 +15,6 @@ import { TzedakahBox, type TzedakahBoxHandle } from '@/components/tzedakah-box';
 import { fontSize, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { errorFeedback, playCoinSound, successFeedback } from '@/services/feedback';
-import { shareReceipt } from '@/services/receipts';
 import { donateWithFunds } from '@/services/wallet';
 import { useAppStore, useCoinAmounts, useTotals } from '@/store/app-store';
 import type { CategoryId, Donation } from '@/types';
@@ -106,17 +105,12 @@ export default function GivingScreen() {
       <View style={styles.header}>
         <StreakBadge days={streak.current} active={totals.hasGivenToday} />
 
-        <Link href={card ? '/(tabs)/wallet' : '/add-card'} asChild>
+        <Link href="/(tabs)/settings" asChild>
           <Pressable
             accessibilityRole="button"
-            style={StyleSheet.flatten([
-              styles.cardBadge,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-            ])}>
-            <CreditCard size={16} color={colors.textMuted} strokeWidth={1.75} />
-            <Text style={[styles.cardBadgeText, { color: colors.text }]}>
-              {card ? `•••• ${card.last4}` : 'הוספת כרטיס'}
-            </Text>
+            accessibilityLabel="הגדרות תזכורות"
+            style={[styles.notifyBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Bell size={18} color={colors.textMuted} strokeWidth={1.75} />
           </Pressable>
         </Link>
       </View>
@@ -186,9 +180,6 @@ export default function GivingScreen() {
         streak={streak.current}
         onClose={() => setLastDonation(null)}
         onSaveDedication={attachDedication}
-        onShareReceipt={(donation) => {
-          void shareReceipt(donation).catch(() => setHint('לא הצלחנו להפיק קבלה כרגע.'));
-        }}
       />
 
       <ChargeFailedModal
@@ -215,18 +206,13 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
   },
-  cardBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs + 2,
-    paddingVertical: spacing.xs + 2,
-    paddingHorizontal: spacing.sm + 4,
+  notifyBadge: {
+    width: 36,
+    height: 36,
     borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-  },
-  cardBadgeText: {
-    fontSize: fontSize.sm,
-    fontWeight: '800',
   },
   stage: {
     flex: 1,

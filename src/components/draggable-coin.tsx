@@ -1,5 +1,4 @@
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -10,8 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Coin } from '@/components/coin';
-import { fontSize, spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { coinDropFeedback } from '@/services/feedback';
 
 /** Swipe further than this (or flick fast enough) and the coin is released. */
@@ -32,8 +29,6 @@ type DraggableCoinProps = {
  * plays the same flight. Tap is the fast path for the sub-10-second flow.
  */
 export function DraggableCoin({ amount, target, disabled = false, onDrop }: DraggableCoinProps) {
-  const { colors } = useTheme();
-
   const x = useSharedValue(0);
   const y = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -104,28 +99,14 @@ export function DraggableCoin({ amount, target, disabled = false, onDrop }: Drag
   }));
 
   return (
-    <View style={styles.slot}>
-      <GestureDetector gesture={Gesture.Exclusive(pan, tap)}>
-        <Animated.View
-          accessibilityRole="button"
-          accessibilityLabel={`תרומה של ${amount} שקלים`}
-          accessibilityHint="החליקו למעלה או הקישו כדי להכניס לקופה"
-          style={animatedStyle}>
-          <Coin amount={amount} muted={disabled} />
-        </Animated.View>
-      </GestureDetector>
-      <Text style={[styles.caption, { color: colors.textMuted }]}>{amount} ₪</Text>
-    </View>
+    <GestureDetector gesture={Gesture.Exclusive(pan, tap)}>
+      <Animated.View
+        accessibilityRole="button"
+        accessibilityLabel={`תרומה של ${amount} שקלים`}
+        accessibilityHint="החליקו למעלה או הקישו כדי להכניס לקופה"
+        style={animatedStyle}>
+        <Coin amount={amount} muted={disabled} />
+      </Animated.View>
+    </GestureDetector>
   );
 }
-
-const styles = StyleSheet.create({
-  slot: {
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  caption: {
-    fontSize: fontSize.xs,
-    fontWeight: '600',
-  },
-});

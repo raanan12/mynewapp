@@ -155,6 +155,8 @@ export const defaultTexts: Record<string, string> = {
   history_empty_body: 'כל תרומה תופיע כאן יחד עם הקבלה שלה.',
   terms_header_title: 'תקנון ותנאי שימוש',
   terms_page_title: 'תקנון, תנאי שימוש ומדיניות פרטיות',
+  trust_title: 'לאן הכסף הולך',
+  wallet_title: 'כרטיס אשראי',
   /** Gates re-acceptance: bump this whenever a terms_sections paragraph
    *  changes materially, and every user - including ones who already
    *  accepted an older wording - is asked to accept again before their

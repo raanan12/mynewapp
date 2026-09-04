@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, FileText, RotateCcw } from 'lucide-react-native';
+import { ChevronLeft, FileText } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
@@ -21,7 +21,6 @@ export default function SettingsScreen() {
   const settings = useAppStore((state) => state.settings);
   const card = useAppStore((state) => state.card);
   const updateSettings = useAppStore((state) => state.updateSettings);
-  const reset = useAppStore((state) => state.reset);
   const categories = useCategories();
   const coinAmounts = useCoinAmounts();
 
@@ -34,13 +33,6 @@ export default function SettingsScreen() {
 
   function toggleReminder(slot: ReminderSlot, enabled: boolean) {
     updateSettings({ reminders: { ...settings.reminders, [slot]: enabled } });
-  }
-
-  function confirmReset() {
-    Alert.alert('איפוס נתונים', 'כל ההיסטוריה והרצף יימחקו מהמכשיר.', [
-      { text: 'ביטול', style: 'cancel' },
-      { text: 'איפוס', style: 'destructive', onPress: reset },
-    ]);
   }
 
   return (
@@ -201,11 +193,6 @@ export default function SettingsScreen() {
           <FileText size={18} color={colors.textMuted} strokeWidth={1.75} />
           <Text style={[styles.linkText, { color: colors.text }]}>תקנון ותנאי שימוש</Text>
           <ChevronLeft size={18} color={colors.textMuted} strokeWidth={1.75} />
-        </Pressable>
-
-        <Pressable onPress={confirmReset} style={[styles.link, { borderColor: colors.border }]}>
-          <RotateCcw size={18} color={colors.danger} strokeWidth={1.75} />
-          <Text style={[styles.linkText, { color: colors.danger }]}>איפוס נתוני הדגמה</Text>
         </Pressable>
 
         <Text style={[styles.footer, { color: colors.textMuted }]}>
