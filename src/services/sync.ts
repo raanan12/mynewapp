@@ -133,6 +133,7 @@ export async function pullContent(): Promise<void> {
           label: row.label,
           description: row.description,
           icon: row.icon,
+          iconImageUrl: row.icon_image_url,
         }))
       : current.categories,
     coinAmounts: settingsRow?.coin_amounts?.length ? settingsRow.coin_amounts : current.coinAmounts,

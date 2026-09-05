@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
+import { uploadAsset } from '../lib/upload';
 import { IconPicker } from './icon-picker';
 
 type CategoryRow = {
@@ -8,6 +9,7 @@ type CategoryRow = {
   label: string;
   description: string;
   icon: string;
+  icon_image_url: string | null;
   sort_order: number;
   is_active: boolean;
 };
@@ -25,6 +27,7 @@ export function CategoriesEditor() {
   const [draft, setDraft] = useState(emptyDraft);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   async function load() {
     const { data } = await supabase.from('categories').select('*').order('sort_order');
@@ -57,8 +60,22 @@ export function CategoriesEditor() {
     await load();
   }
 
-  async function updateField(id: string, field: keyof CategoryRow, value: string | boolean | number) {
+  async function updateField(id: string, field: keyof CategoryRow, value: string | boolean | number | null) {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+  }
+
+  async function uploadIconImage(id: string, file: File) {
+    setUploadingId(id);
+    setError(null);
+
+    try {
+      const url = await uploadAsset(file, 'category-icons');
+      updateField(id, 'icon_image_url', url);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'העלאת התמונה נכשלה.');
+    } finally {
+      setUploadingId(null);
+    }
   }
 
   async function saveRow(row: CategoryRow) {
@@ -68,6 +85,7 @@ export function CategoriesEditor() {
         label: row.label,
         description: row.description,
         icon: row.icon,
+        icon_image_url: row.icon_image_url,
         sort_order: row.sort_order,
         is_active: row.is_active,
       })
@@ -160,6 +178,36 @@ export function CategoriesEditor() {
           <div style={{ marginBottom: 10 }}>
             <label>אייקון</label>
             <IconPicker value={row.icon} onChange={(icon) => void updateField(row.id, 'icon', icon)} />
+          </div>
+          <div className="field">
+            <label>תמונה מותאמת (אופציונלי, מחליפה את האייקון)</label>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {row.icon_image_url ? (
+                <img
+                  src={row.icon_image_url}
+                  alt=""
+                  style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6 }}
+                />
+              ) : null}
+              <label className="btn secondary" style={{ cursor: 'pointer' }}>
+                {uploadingId === row.id ? 'מעלה...' : 'העלאת תמונה'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void uploadIconImage(row.id, file);
+                    event.target.value = '';
+                  }}
+                />
+              </label>
+              {row.icon_image_url ? (
+                <button className="btn danger" onClick={() => void updateField(row.id, 'icon_image_url', null)}>
+                  הסרה
+                </button>
+              ) : null}
+            </div>
           </div>
           <label className="checkbox-row">
             <input

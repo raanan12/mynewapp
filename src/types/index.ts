@@ -16,6 +16,8 @@ export type Category = {
   description: string;
   /** Icon key resolved by `resolveCategoryIcon` to a Lucide component. */
   icon: string;
+  /** Admin-uploaded image that replaces the Lucide icon entirely when set. */
+  iconImageUrl: string | null;
 };
 
 export type Charity = {

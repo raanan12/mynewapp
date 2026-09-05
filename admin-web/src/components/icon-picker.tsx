@@ -4,12 +4,16 @@ import {
   GraduationCap,
   Heart,
   HeartPulse,
+  History,
   Home,
   type LucideIcon,
+  Settings,
+  ShieldCheck,
   Star,
   Stethoscope,
   Users,
   Utensils,
+  WalletCards,
 } from 'lucide-react';
 
 /** Mirrors src/lib/category-icon.tsx in the app - keep the two in sync. */
@@ -24,6 +28,10 @@ export const ICON_OPTIONS: { key: string; label: string; Icon: LucideIcon }[] = 
   { key: 'people', label: 'אנשים', Icon: Users },
   { key: 'school', label: 'לימודים', Icon: GraduationCap },
   { key: 'restaurant', label: 'מזון', Icon: Utensils },
+  { key: 'wallet', label: 'כרטיס', Icon: WalletCards },
+  { key: 'history', label: 'היסטוריה', Icon: History },
+  { key: 'shield', label: 'הגנה', Icon: ShieldCheck },
+  { key: 'settings', label: 'הגדרות', Icon: Settings },
 ];
 
 function normalize(value: string): string {

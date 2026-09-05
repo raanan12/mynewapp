@@ -68,6 +68,7 @@ export type CategoryRow = {
   label: string;
   description: string;
   icon: string;
+  icon_image_url: string | null;
   sort_order: number;
   is_active: boolean;
 };

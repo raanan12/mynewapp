@@ -1,9 +1,9 @@
 /**
- * Maps a category's `icon` string (stored in the DB, editable from the admin
- * site) to a Lucide component. The admin UI still labels the field with
- * familiar Ionicons-style names ("heart-outline", "book-outline", ...), so
- * this accepts both the "-outline" suffix and the bare name, and falls back
- * to a generic heart for anything unrecognized rather than rendering nothing.
+ * Maps an icon key string (stored in the DB, editable from the admin site)
+ * to a Lucide component. Used both for category icons and for the bottom
+ * tab bar icons. The admin UI still labels category icons with familiar
+ * Ionicons-style names ("heart-outline", "book-outline", ...), so this
+ * accepts both the "-outline" suffix and the bare name.
  */
 import {
   BookOpen,
@@ -11,12 +11,16 @@ import {
   GraduationCap,
   Heart,
   HeartPulse,
+  History,
   Home,
   type LucideIcon,
+  Settings,
+  ShieldCheck,
   Star,
   Stethoscope,
   Users,
   Utensils,
+  WalletCards,
 } from 'lucide-react-native';
 
 const ICONS: Record<string, LucideIcon> = {
@@ -30,9 +34,26 @@ const ICONS: Record<string, LucideIcon> = {
   people: Users,
   school: GraduationCap,
   restaurant: Utensils,
+  wallet: WalletCards,
+  history: History,
+  shield: ShieldCheck,
+  settings: Settings,
 };
 
+function normalize(name: string): string {
+  return name.replace(/-outline$/, '').trim().toLowerCase();
+}
+
+/** Falls back to a generic heart for anything unrecognized rather than
+ *  rendering nothing - used for category icons, which must always show
+ *  something. */
 export function resolveCategoryIcon(name: string): LucideIcon {
-  const key = name.replace(/-outline$/, '').trim().toLowerCase();
-  return ICONS[key] ?? Heart;
+  return ICONS[normalize(name)] ?? Heart;
+}
+
+/** Returns null for an empty/unrecognized key, so the caller (tab bar) can
+ *  fall back to its own hardcoded default icon instead of a generic one. */
+export function tryResolveIcon(name: string | null | undefined): LucideIcon | null {
+  if (!name) return null;
+  return ICONS[normalize(name)] ?? null;
 }

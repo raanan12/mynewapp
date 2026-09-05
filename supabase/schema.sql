@@ -51,9 +51,13 @@ create table if not exists public.categories (
   description text not null default '',
   /** Ionicons glyph name. */
   icon text not null default 'heart-outline',
+  -- Admin-uploaded image that replaces the Lucide icon entirely when set.
+  icon_image_url text,
   sort_order integer not null default 0,
   is_active boolean not null default true
 );
+
+alter table public.categories add column if not exists icon_image_url text;
 
 insert into public.categories (id, label, description, icon, sort_order) values
   ('orphans', 'יתומים', 'תמיכה ביתומים ואלמנות', 'heart-outline', 1),
@@ -229,6 +233,11 @@ insert into public.app_texts (id, value) values
   ('trust_title', 'לאן הכסף הולך'),
   ('wallet_title', 'כרטיס אשראי'),
   ('box_logo_url', ''),
+  ('tab_icon_giving', ''),
+  ('tab_icon_wallet', ''),
+  ('tab_icon_history', ''),
+  ('tab_icon_trust', ''),
+  ('tab_icon_settings', ''),
   ('terms_version', '1.0')
 on conflict (id) do nothing;
 

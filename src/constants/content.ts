@@ -17,24 +17,28 @@ export const defaultCategories: readonly Category[] = [
     label: 'יתומים',
     description: 'תמיכה ביתומים ואלמנות',
     icon: 'heart-outline',
+    iconImageUrl: null,
   },
   {
     id: 'medical',
     label: 'רפואה',
     description: 'סיוע לחולים ולמשפחותיהם',
     icon: 'medkit-outline',
+    iconImageUrl: null,
   },
   {
     id: 'torah',
     label: 'עמלי תורה',
     description: 'החזקת לומדי תורה',
     icon: 'book-outline',
+    iconImageUrl: null,
   },
   {
     id: 'families',
     label: 'משפחות נזקקות',
     description: 'מזון וצרכי בית בסיסיים',
     icon: 'home-outline',
+    iconImageUrl: null,
   },
 ] as const;
 
@@ -188,6 +192,13 @@ export const defaultTexts: Record<string, string> = {
   wallet_title: 'כרטיס אשראי',
   /** Empty means "use the bundled app icon" - see TzedakahBox's `logoUrl` prop. */
   box_logo_url: '',
+  /** Empty means "use the hardcoded default icon for this tab" - either an
+   *  icon key resolved by `tryResolveIcon`, or a full image URL. */
+  tab_icon_giving: '',
+  tab_icon_wallet: '',
+  tab_icon_history: '',
+  tab_icon_trust: '',
+  tab_icon_settings: '',
   /** Gates re-acceptance: bump this whenever a terms_sections paragraph
    *  changes materially, and every user - including ones who already
    *  accepted an older wording - is asked to accept again before their

@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { spacing } from '@/constants/theme';
@@ -47,7 +48,11 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
                   opacity: pressed ? 0.85 : 1,
                 },
               ]}>
-              <Icon size={26} color={selected ? colors.onAccent : '#333333'} strokeWidth={1.75} />
+              {category.iconImageUrl ? (
+                <Image source={{ uri: category.iconImageUrl }} style={styles.iconImage} contentFit="contain" />
+              ) : (
+                <Icon size={26} color={selected ? colors.onAccent : '#333333'} strokeWidth={1.75} />
+              )}
               <Text
                 style={[styles.label, { color: selected ? colors.onAccent : '#333333' }]}
                 numberOfLines={1}
@@ -89,6 +94,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 16,
     borderWidth: 1,
+  },
+  iconImage: {
+    width: 28,
+    height: 28,
   },
   label: {
     fontSize: 12,
