@@ -169,6 +169,13 @@ export type AppPopupRow = {
   link_url: string | null;
 };
 
+/** One row per signed-in device - see src/services/push.ts. */
+export type PushTokenRow = {
+  user_id: string;
+  token: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -249,6 +256,12 @@ export type Database = {
         Row: AppPopupRow;
         Insert: AppPopupRow;
         Update: Partial<AppPopupRow>;
+        Relationships: [];
+      };
+      push_tokens: {
+        Row: PushTokenRow;
+        Insert: PushTokenRow;
+        Update: Partial<PushTokenRow>;
         Relationships: [];
       };
     };

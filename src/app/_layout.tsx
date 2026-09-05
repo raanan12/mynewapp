@@ -12,6 +12,7 @@ import { useAutoPilot } from '@/hooks/use-auto-pilot';
 import { useSync } from '@/hooks/use-sync';
 import { useTheme } from '@/hooks/use-theme';
 import { warmUpFeedback } from '@/services/feedback';
+import { registerPushToken } from '@/services/push';
 import { useAppText } from '@/store/app-store';
 
 // RTL must be forced before the first render. On iOS the flag only takes full
@@ -32,6 +33,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     warmUpFeedback();
+    void registerPushToken();
   }, []);
 
   const navigationTheme = {

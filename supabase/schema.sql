@@ -720,3 +720,94 @@ drop policy if exists "admin writes app-assets" on storage.objects;
 create policy "admin writes app-assets" on storage.objects
   for all using (bucket_id = 'app-assets' and public.is_admin())
   with check (bucket_id = 'app-assets' and public.is_admin());
+
+-- ------------------------------------------------------- push notifications --
+-- No Edge Function needed: `pg_net` calls Expo's push API directly from a
+-- Postgres function, and `pg_cron` runs it every minute. If either
+-- extension is unavailable on your plan, enable it first under
+-- Database > Extensions in the Supabase dashboard.
+create extension if not exists pg_net;
+create extension if not exists pg_cron;
+
+-- One row per signed-in device. Upserted by the app on launch (see
+-- src/services/push.ts) - `token` is an Expo push token, not an APNs/FCM
+-- token, so nothing platform-specific is exposed here.
+create table if not exists public.push_tokens (
+  user_id uuid primary key references public.profiles (id) on delete cascade,
+  token text not null,
+  updated_at timestamptz not null default now()
+);
+
+-- Composed from the admin site. `dispatch_due_push` (below) picks up any row
+-- where `sent_at` is still null once `scheduled_at` has passed - leaving
+-- `scheduled_at` at its default sends it on the next minute's tick, which is
+-- what a "one-time, send now" push is under the hood.
+create table if not exists public.push_notifications (
+  id uuid primary key default uuid_generate_v4(),
+  title text not null,
+  body text not null,
+  link_url text,
+  scheduled_at timestamptz not null default now(),
+  sent_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+alter table public.push_tokens enable row level security;
+alter table public.push_notifications enable row level security;
+
+drop policy if exists "own push token" on public.push_tokens;
+create policy "own push token" on public.push_tokens
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "admin manages push notifications" on public.push_notifications;
+create policy "admin manages push notifications" on public.push_notifications
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- SECURITY DEFINER so it can read every row in `push_tokens` despite each
+-- user's RLS policy only allowing them to see their own - the same
+-- justification as `is_admin()` above, just for a cron job instead of a
+-- policy. Sends everyone the same message in one batched request; Expo's
+-- API accepts up to 100 messages per call, which comfortably covers this
+-- app's current audience. If that stops being true, chunk `messages` into
+-- groups of 100 before the http_post below.
+create or replace function public.dispatch_due_push()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_notification record;
+  v_messages jsonb;
+begin
+  for v_notification in
+    select * from public.push_notifications
+    where sent_at is null and scheduled_at <= now()
+  loop
+    select coalesce(jsonb_agg(jsonb_build_object(
+      'to', t.token,
+      'title', v_notification.title,
+      'body', v_notification.body,
+      'data', jsonb_build_object('url', v_notification.link_url)
+    )), '[]'::jsonb)
+    into v_messages
+    from public.push_tokens t;
+
+    if jsonb_array_length(v_messages) > 0 then
+      perform net.http_post(
+        url := 'https://exp.host/--/api/v2/push/send',
+        headers := jsonb_build_object('Content-Type', 'application/json'),
+        body := v_messages
+      );
+    end if;
+
+    update public.push_notifications
+    set sent_at = now()
+    where id = v_notification.id;
+  end loop;
+end;
+$$;
+
+-- Re-running this file must not create duplicate scheduled jobs.
+delete from cron.job where jobname = 'dispatch-push-notifications';
+select cron.schedule('dispatch-push-notifications', '* * * * *', 'select public.dispatch_due_push();');

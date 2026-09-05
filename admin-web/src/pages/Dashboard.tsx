@@ -7,6 +7,7 @@ import { CharitiesEditor } from '../components/CharitiesEditor';
 import { CoinAmountsEditor } from '../components/CoinAmountsEditor';
 import { HomeMessageEditor } from '../components/HomeMessageEditor';
 import { PopupEditor } from '../components/PopupEditor';
+import { PushEditor } from '../components/PushEditor';
 import { QuotesEditor } from '../components/QuotesEditor';
 import { ReminderSlotsEditor } from '../components/ReminderSlotsEditor';
 import { TabIconsEditor } from '../components/TabIconsEditor';
@@ -25,7 +26,8 @@ type Tab =
   | 'home'
   | 'tabIcons'
   | 'reminders'
-  | 'popup';
+  | 'popup'
+  | 'push';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'analytics', label: 'נתונים' },
@@ -40,6 +42,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'tabIcons', label: 'אייקוני תפריט' },
   { id: 'reminders', label: 'תזכורות ושעות' },
   { id: 'popup', label: 'פופ-אפ פתיחה' },
+  { id: 'push', label: 'התראות Push' },
 ];
 
 type DashboardProps = {
@@ -82,6 +85,7 @@ export function Dashboard({ onSignOut }: DashboardProps) {
         {tab === 'tabIcons' ? <TabIconsEditor /> : null}
         {tab === 'reminders' ? <ReminderSlotsEditor /> : null}
         {tab === 'popup' ? <PopupEditor /> : null}
+        {tab === 'push' ? <PushEditor /> : null}
       </div>
     </div>
   );
