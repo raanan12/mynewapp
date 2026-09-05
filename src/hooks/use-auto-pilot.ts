@@ -26,7 +26,7 @@ export function useAutoPilot(): void {
       const today = toDateKey();
       if (streak.lastDonationDate === today) return;
 
-      const allSlots = [...reminderPresets, ...settings.customReminders];
+      const allSlots = [...reminderPresets, ...(settings.customReminders ?? [])];
       const slot = allSlots.find((candidate) => candidate.id === settings.autoPilot.slotId);
       if (!slot) return;
       const { hour, minute } = slot;

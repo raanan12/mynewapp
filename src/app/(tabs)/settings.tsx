@@ -46,7 +46,7 @@ export default function SettingsScreen() {
     const slot = { id, label: customLabel.trim() || 'תזכורת אישית', hour, minute: customMinute, isCustom: true };
 
     updateSettings({
-      customReminders: [...settings.customReminders, slot],
+      customReminders: [...(settings.customReminders ?? []), slot],
       reminders: { ...settings.reminders, [id]: true },
     });
     setCustomLabel('');
@@ -54,7 +54,7 @@ export default function SettingsScreen() {
 
   function removeCustomReminder(id: string) {
     updateSettings({
-      customReminders: settings.customReminders.filter((slot) => slot.id !== id),
+      customReminders: (settings.customReminders ?? []).filter((slot) => slot.id !== id),
       reminders: { ...settings.reminders, [id]: false },
     });
   }

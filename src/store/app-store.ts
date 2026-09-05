@@ -363,9 +363,7 @@ export const useAppPopup = () => useAppStore((state) => state.appPopup);
 /** Admin presets + the user's own custom slots, combined - what reminder
  *  toggles and the auto-pilot time picker both iterate over. */
 export const useAllReminderSlots = () =>
-  useAppStore(
-    useShallow((state) => [...state.reminderPresets, ...state.settings.customReminders])
-  );
+  useAppStore(useShallow((state) => [...state.reminderPresets, ...(state.settings.customReminders ?? [])]));
 
 export const useAppText = (key: string) => useAppStore((state) => state.texts[key] ?? key);
 
