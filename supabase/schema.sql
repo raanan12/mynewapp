@@ -808,6 +808,7 @@ begin
 end;
 $$;
 
--- Re-running this file must not create duplicate scheduled jobs.
-delete from cron.job where jobname = 'dispatch-push-notifications';
+-- `cron.schedule` upserts by job name (no direct access to the `cron.job`
+-- table is needed, or granted, in the SQL editor) - calling this again on a
+-- re-run updates the existing job in place rather than duplicating it.
 select cron.schedule('dispatch-push-notifications', '* * * * *', 'select public.dispatch_due_push();');
