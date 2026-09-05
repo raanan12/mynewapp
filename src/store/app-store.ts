@@ -268,7 +268,33 @@ export const useAppStore = create<AppState>()(
       storage: createJSONStorage(() => AsyncStorage),
       // Bumped: v1 shipped with a prepaid wallet (balance/transactions), which
       // no longer exists - every donation charges the card directly instead.
-      version: 2,
+      // v3: reminder slots moved from a fixed union to a dynamic list -
+      // `settings.customReminders`/`autoPilot.slotId` didn't exist before,
+      // so a persisted v2 blob would otherwise load without them and crash
+      // the first time something spreads `customReminders`.
+      version: 3,
+      migrate: (persisted, fromVersion) => {
+        const state = persisted as { settings?: Partial<Settings> } | undefined;
+        if (fromVersion >= 3 || !state?.settings) return persisted;
+
+        return {
+          ...state,
+          settings: {
+            ...defaultSettings,
+            ...state.settings,
+            customReminders: state.settings.customReminders ?? [],
+            autoPilot: {
+              ...defaultSettings.autoPilot,
+              ...state.settings.autoPilot,
+              slotId:
+                (state.settings.autoPilot as (Partial<Settings['autoPilot']> & { slot?: string }) | undefined)
+                  ?.slotId ??
+                (state.settings.autoPilot as { slot?: string } | undefined)?.slot ??
+                defaultSettings.autoPilot.slotId,
+            },
+          },
+        };
+      },
     }
   )
 );
