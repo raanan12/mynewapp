@@ -132,8 +132,6 @@ export default function GivingScreen() {
             : 'החליקו מטבע למעלה או הקישו עליו'}
         </Text>
 
-        <HomeMessageCard />
-
         {charging ? <ProcessingBanner message="מבצעים את התרומה..." /> : null}
 
         {hint ? (
@@ -143,6 +141,8 @@ export default function GivingScreen() {
           </View>
         ) : null}
       </View>
+
+      <HomeMessageCard />
 
       <CategoryPicker value={category} onChange={setCategory} />
 

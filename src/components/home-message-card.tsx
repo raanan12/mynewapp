@@ -24,6 +24,7 @@ export function HomeMessageCard() {
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md,

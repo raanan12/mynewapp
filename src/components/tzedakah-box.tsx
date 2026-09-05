@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { fontSize, palette, radius } from '@/constants/theme';
+import { fontSize, palette } from '@/constants/theme';
 
 export type TzedakahBoxHandle = {
   /** Scale bounce + golden ripple, called the moment a coin enters the slot. */
@@ -120,8 +120,6 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
             <Animated.View style={[styles.ripple, rippleStyle]} />
           </View>
         </Animated.View>
-
-        <View style={styles.shadow} pointerEvents="none" />
       </View>
     </GestureDetector>
   );
@@ -188,14 +186,5 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     borderWidth: 2,
     borderColor: palette.gold,
-  },
-  shadow: {
-    position: 'absolute',
-    bottom: -10,
-    width: BOX_WIDTH * 0.75,
-    height: 16,
-    borderRadius: radius.pill,
-    backgroundColor: palette.charcoal,
-    opacity: 0.1,
   },
 });
