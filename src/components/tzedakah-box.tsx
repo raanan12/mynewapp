@@ -111,8 +111,11 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
             )}
           </View>
 
-          <View style={styles.plateWrap} pointerEvents="none">
+          <View style={styles.labelWrap} pointerEvents="none">
             <Text style={styles.plateSub}>נתרם היום</Text>
+          </View>
+
+          <View style={styles.plateWrap} pointerEvents="none">
             <Text style={styles.amountText}>{todayTotal}</Text>
           </View>
 
@@ -136,12 +139,16 @@ const styles = StyleSheet.create({
     width: BOX_WIDTH,
     height: BOX_HEIGHT,
   },
+  // Both zones below are measured directly off the source PNG's pixels
+  // (the plate's gray metal vs. the frame's gold vs. the clear glass), not
+  // eyeballed - the image has ~20% transparent padding under the box art,
+  // which is why earlier guesses landed in the wrong place.
   logoWrap: {
     position: 'absolute',
     top: '30%',
-    left: '25%',
-    width: '50%',
-    height: '20%',
+    left: '20%',
+    width: '60%',
+    height: '25%',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -149,12 +156,21 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  labelWrap: {
+    position: 'absolute',
+    top: '59%',
+    left: '17%',
+    width: '66%',
+    height: '7%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   plateWrap: {
     position: 'absolute',
-    top: '68%',
-    left: '18%',
-    width: '64%',
-    height: '20%',
+    top: '67%',
+    left: '17%',
+    width: '66%',
+    height: '10%',
     alignItems: 'center',
     justifyContent: 'center',
   },
