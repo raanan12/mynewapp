@@ -19,7 +19,7 @@ export type TzedakahBoxHandle = {
 
 // Matches the source art's own aspect ratio (2016x2094) so the box never
 // gets stretched.
-export const BOX_WIDTH = 210;
+export const BOX_WIDTH = 260;
 export const BOX_HEIGHT = Math.round(BOX_WIDTH * (2094 / 2016));
 /** Vertical offset of the slot from the box center - coins aim here. */
 export const SLOT_OFFSET_Y = BOX_HEIGHT * 0.12 - BOX_HEIGHT / 2;
@@ -92,8 +92,6 @@ export const TzedakahBox = forwardRef<TzedakahBoxHandle, TzedakahBoxProps>(funct
   return (
     <GestureDetector gesture={tilt}>
       <View style={styles.root}>
-        <View style={styles.glow} pointerEvents="none" />
-
         <Animated.View style={[styles.box, boxStyle]}>
           <Image
             source={require('../../assets/images/tzedakah-box.png')}
@@ -136,28 +134,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  glow: {
-    position: 'absolute',
-    width: BOX_WIDTH * 1.3,
-    height: BOX_HEIGHT * 1.05,
-    borderRadius: 999,
-    backgroundColor: palette.frameGold,
-    opacity: 0.22,
-    shadowColor: palette.frameGold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 40,
-  },
   box: {
     width: BOX_WIDTH,
     height: BOX_HEIGHT,
   },
   logoWrap: {
     position: 'absolute',
-    top: '24%',
-    left: '20%',
-    width: '60%',
-    height: '20%',
+    top: '22%',
+    left: '15%',
+    width: '70%',
+    height: '26%',
     alignItems: 'center',
     justifyContent: 'center',
   },
