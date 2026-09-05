@@ -19,12 +19,15 @@ import { useShallow } from 'zustand/react/shallow';
 
 import {
   defaultApprovals,
+  defaultAppPopup,
   defaultCategories,
   defaultCharities,
   defaultCoinAmounts,
   defaultHomeMessage,
+  defaultReminderSlots,
   defaultTermsSections,
   defaultTexts,
+  type AppPopup,
   type HomeMessage,
   type TermsSection,
 } from '@/constants/content';
@@ -35,6 +38,7 @@ import type {
   Charity,
   Donation,
   RabbinicalApproval,
+  ReminderSlot,
   Settings,
   Streak,
 } from '@/types';
@@ -74,6 +78,10 @@ type AppState = {
   termsSections: TermsSection[];
   /** Optional "atmosphere sentence" shown on the giving screen. */
   homeMessage: HomeMessage;
+  /** Admin-defined preset reminder/auto-pilot times. */
+  reminderPresets: ReminderSlot[];
+  /** Opening popup shown once per day on the giving screen. */
+  appPopup: AppPopup;
   /** Legal record of terms-of-service acceptance - null until the user
    *  explicitly accepts on the terms screen, which gates card entry. */
   termsAcceptedAt: string | null;
@@ -95,6 +103,8 @@ type AppState = {
     texts: Record<string, string>;
     termsSections: TermsSection[];
     homeMessage: HomeMessage;
+    reminderPresets: ReminderSlot[];
+    appPopup: AppPopup;
   }) => void;
   acceptTerms: (version: string) => void;
   markOnboarded: () => void;
@@ -120,7 +130,8 @@ type AppState = {
 
 export const defaultSettings: Settings = {
   reminders: { morning: true, afternoon: false, evening: false, preShabbat: true },
-  autoPilot: { enabled: false, amount: 5, categoryId: 'families', slot: 'morning' },
+  customReminders: [],
+  autoPilot: { enabled: false, amount: 5, categoryId: 'families', slotId: 'morning' },
   soundEnabled: true,
   hapticsEnabled: true,
 };
@@ -142,6 +153,8 @@ export const useAppStore = create<AppState>()(
       texts: { ...defaultTexts },
       termsSections: [...defaultTermsSections],
       homeMessage: { ...defaultHomeMessage },
+      reminderPresets: [...defaultReminderSlots],
+      appPopup: { ...defaultAppPopup },
       termsAcceptedAt: null,
       termsVersion: null,
       hasOnboarded: false,
@@ -168,8 +181,28 @@ export const useAppStore = create<AppState>()(
           ),
         })),
 
-      setContent: ({ categories, coinAmounts, charities, approvals, texts, termsSections, homeMessage }) =>
-        set({ categories, coinAmounts, charities, approvals, texts, termsSections, homeMessage }),
+      setContent: ({
+        categories,
+        coinAmounts,
+        charities,
+        approvals,
+        texts,
+        termsSections,
+        homeMessage,
+        reminderPresets,
+        appPopup,
+      }) =>
+        set({
+          categories,
+          coinAmounts,
+          charities,
+          approvals,
+          texts,
+          termsSections,
+          homeMessage,
+          reminderPresets,
+          appPopup,
+        }),
 
       acceptTerms: (version) => set({ termsAcceptedAt: new Date().toISOString(), termsVersion: version }),
 
@@ -189,6 +222,8 @@ export const useAppStore = create<AppState>()(
           texts: { ...defaultTexts },
           termsSections: [...defaultTermsSections],
           homeMessage: { ...defaultHomeMessage },
+          reminderPresets: [...defaultReminderSlots],
+          appPopup: { ...defaultAppPopup },
           termsAcceptedAt: null,
           termsVersion: null,
           hasOnboarded: false,
@@ -296,6 +331,15 @@ export const useApprovals = () => useAppStore((state) => state.approvals);
 export const useTermsSections = () => useAppStore((state) => state.termsSections);
 
 export const useHomeMessage = () => useAppStore((state) => state.homeMessage);
+
+export const useAppPopup = () => useAppStore((state) => state.appPopup);
+
+/** Admin presets + the user's own custom slots, combined - what reminder
+ *  toggles and the auto-pilot time picker both iterate over. */
+export const useAllReminderSlots = () =>
+  useAppStore(
+    useShallow((state) => [...state.reminderPresets, ...state.settings.customReminders])
+  );
 
 export const useAppText = (key: string) => useAppStore((state) => state.texts[key] ?? key);
 

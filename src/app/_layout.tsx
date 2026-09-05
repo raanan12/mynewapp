@@ -6,6 +6,7 @@ import { I18nManager } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { OpeningPopup } from '@/components/opening-popup';
 import { colors as themeColors } from '@/constants/theme';
 import { useAutoPilot } from '@/hooks/use-auto-pilot';
 import { useSync } from '@/hooks/use-sync';
@@ -61,6 +62,7 @@ export default function RootLayout() {
             />
           </Stack>
           <StatusBar style={isDark ? 'light' : 'dark'} />
+          <OpeningPopup />
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -114,6 +114,8 @@ export async function pullContent(): Promise<void> {
     { data: textRows },
     { data: termsRows },
     { data: homeMessageRow },
+    { data: reminderSlotRows },
+    { data: popupRow },
   ] = await Promise.all([
     supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
     supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
@@ -122,6 +124,8 @@ export async function pullContent(): Promise<void> {
     supabase.from('app_texts').select('id, value'),
     supabase.from('terms_sections').select('*').order('sort_order'),
     supabase.from('home_message').select('text, image_url').eq('id', 'default').maybeSingle(),
+    supabase.from('reminder_slots').select('*').order('sort_order'),
+    supabase.from('app_popup').select('enabled, image_url, link_url').eq('id', 'default').maybeSingle(),
   ]);
 
   const current = useAppStore.getState();
@@ -169,6 +173,12 @@ export async function pullContent(): Promise<void> {
     homeMessage: homeMessageRow
       ? { text: homeMessageRow.text, imageUrl: homeMessageRow.image_url }
       : current.homeMessage,
+    reminderPresets: reminderSlotRows?.length
+      ? reminderSlotRows.map((row) => ({ id: row.id, label: row.label, hour: row.hour, minute: row.minute }))
+      : current.reminderPresets,
+    appPopup: popupRow
+      ? { enabled: popupRow.enabled, imageUrl: popupRow.image_url, linkUrl: popupRow.link_url }
+      : current.appPopup,
   });
 }
 

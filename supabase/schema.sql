@@ -287,6 +287,37 @@ create table if not exists public.home_message (
 insert into public.home_message (id) values ('default')
 on conflict (id) do nothing;
 
+-- ---------------------------------------------------------- reminder_slots --
+-- Admin-defined preset reminder/auto-pilot times. A user can also add their
+-- own free-hour slots, kept only on their device (see Settings.customReminders
+-- in src/types/index.ts) - those never appear in this table.
+create table if not exists public.reminder_slots (
+  id text primary key,
+  label text not null,
+  hour integer not null default 8 check (hour between 0 and 23),
+  minute integer not null default 0 check (minute between 0 and 59),
+  sort_order integer not null default 0
+);
+
+insert into public.reminder_slots (id, label, hour, minute, sort_order) values
+  ('morning', 'בוקר (אחרי שחרית)', 8, 0, 1),
+  ('afternoon', 'צהריים (מנחה)', 13, 30, 2),
+  ('evening', 'ערב (לפני מעריב)', 19, 0, 3),
+  ('preShabbat', 'ערב שבת', 14, 0, 4)
+on conflict (id) do nothing;
+
+-- -------------------------------------------------------------- app_popup --
+-- Opening popup shown once per day on the giving screen when enabled.
+create table if not exists public.app_popup (
+  id text primary key default 'default',
+  enabled boolean not null default false,
+  image_url text,
+  link_url text
+);
+
+insert into public.app_popup (id) values ('default')
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------- kesher_settings --
 -- Non-secret Kesher (קשר סליקה) routing ids. The API username/password stay
 -- as Edge Function secrets and never appear in this table.
@@ -325,6 +356,8 @@ alter table public.giving_settings enable row level security;
 alter table public.app_texts enable row level security;
 alter table public.terms_sections enable row level security;
 alter table public.home_message enable row level security;
+alter table public.reminder_slots enable row level security;
+alter table public.app_popup enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -412,6 +445,20 @@ create policy "public read home message" on public.home_message
   for select using (true);
 drop policy if exists "admin writes home message" on public.home_message;
 create policy "admin writes home message" on public.home_message
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "public read reminder slots" on public.reminder_slots;
+create policy "public read reminder slots" on public.reminder_slots
+  for select using (true);
+drop policy if exists "admin writes reminder slots" on public.reminder_slots;
+create policy "admin writes reminder slots" on public.reminder_slots
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "public read app popup" on public.app_popup;
+create policy "public read app popup" on public.app_popup
+  for select using (true);
+drop policy if exists "admin writes app popup" on public.app_popup;
+create policy "admin writes app popup" on public.app_popup
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- --------------------------------------------------- profile bootstrapping --

@@ -7,7 +7,6 @@
 
 import * as Notifications from 'expo-notifications';
 
-import { reminderSlots } from '@/constants/content';
 import type { ReminderSlot, Settings } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -20,25 +19,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const REMINDER_TEXT: Record<ReminderSlot, { title: string; body: string }> = {
-  morning: {
-    title: 'רגע של חסד',
-    body: 'פותחים את היום בצדקה - שקל אחד, עשר שניות.',
-  },
-  afternoon: {
-    title: 'זמן מנחה',
-    body: 'עוד לא נתתם היום. אל תשברו את הרצף.',
-  },
-  evening: {
-    title: 'לפני שהיום נגמר',
-    body: 'תרומה קטנה עכשיו שומרת על הרצף שלכם.',
-  },
-  preShabbat: {
-    title: 'ערב שבת',
-    body: 'נותנים צדקה לפני הדלקת נרות.',
-  },
-};
-
 export async function requestPermission(): Promise<boolean> {
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) return true;
@@ -50,8 +30,9 @@ export async function requestPermission(): Promise<boolean> {
 /**
  * Rebuilds the whole schedule from settings. Cancelling everything first keeps
  * this idempotent - toggling a switch twice cannot leave duplicates behind.
+ * `allSlots` is the combined admin presets + the user's own custom slots.
  */
-export async function syncSchedule(settings: Settings): Promise<boolean> {
+export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[]): Promise<boolean> {
   const wantsAnything =
     settings.autoPilot.enabled || Object.values(settings.reminders).some(Boolean);
 
@@ -60,30 +41,37 @@ export async function syncSchedule(settings: Settings): Promise<boolean> {
 
   if (!(await requestPermission())) return false;
 
-  const slots = Object.keys(reminderSlots) as ReminderSlot[];
+  const slotsById = new Map(allSlots.map((slot) => [slot.id, slot]));
 
-  for (const slot of slots) {
-    if (!settings.reminders[slot]) continue;
+  for (const [slotId, enabled] of Object.entries(settings.reminders)) {
+    if (!enabled) continue;
+    const slot = slotsById.get(slotId);
+    if (!slot) continue;
 
-    const { hour, minute } = reminderSlots[slot];
     await Notifications.scheduleNotificationAsync({
-      identifier: `reminder-${slot}`,
-      content: { ...REMINDER_TEXT[slot], data: { slot } },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute },
+      identifier: `reminder-${slotId}`,
+      content: {
+        title: 'רגע של חסד',
+        body: `עוד לא נתתם היום (${slot.label}) - אל תשברו את הרצף.`,
+        data: { slotId },
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: slot.hour, minute: slot.minute },
     });
   }
 
   if (settings.autoPilot.enabled) {
-    const { hour, minute } = reminderSlots[settings.autoPilot.slot];
-    await Notifications.scheduleNotificationAsync({
-      identifier: 'auto-pilot',
-      content: {
-        title: 'הצדקה היומית בוצעה',
-        body: `${formatCurrency(settings.autoPilot.amount)} נתרמו מארנק החסד שלכם.`,
-        data: { autoPilot: true },
-      },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute },
-    });
+    const slot = slotsById.get(settings.autoPilot.slotId);
+    if (slot) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: 'auto-pilot',
+        content: {
+          title: 'הצדקה היומית בוצעה',
+          body: `${formatCurrency(settings.autoPilot.amount)} נתרמו מארנק החסד שלכם.`,
+          data: { autoPilot: true },
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: slot.hour, minute: slot.minute },
+      });
+    }
   }
 
   return true;

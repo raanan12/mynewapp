@@ -150,6 +150,25 @@ export type HomeMessageRow = {
   image_url: string | null;
 };
 
+/** Admin-defined preset reminder/auto-pilot times - see
+ *  `defaultReminderSlots` in src/constants/content.ts. */
+export type ReminderSlotRow = {
+  id: string;
+  label: string;
+  hour: number;
+  minute: number;
+  sort_order: number;
+};
+
+/** Opening popup shown once per day - see `defaultAppPopup` in
+ *  src/constants/content.ts. */
+export type AppPopupRow = {
+  id: string;
+  enabled: boolean;
+  image_url: string | null;
+  link_url: string | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -218,6 +237,18 @@ export type Database = {
         Row: HomeMessageRow;
         Insert: HomeMessageRow;
         Update: Partial<HomeMessageRow>;
+        Relationships: [];
+      };
+      reminder_slots: {
+        Row: ReminderSlotRow;
+        Insert: ReminderSlotRow;
+        Update: Partial<ReminderSlotRow>;
+        Relationships: [];
+      };
+      app_popup: {
+        Row: AppPopupRow;
+        Insert: AppPopupRow;
+        Update: Partial<AppPopupRow>;
         Relationships: [];
       };
     };

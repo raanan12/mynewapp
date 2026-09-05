@@ -6,7 +6,9 @@ import { CategoriesEditor } from '../components/CategoriesEditor';
 import { CharitiesEditor } from '../components/CharitiesEditor';
 import { CoinAmountsEditor } from '../components/CoinAmountsEditor';
 import { HomeMessageEditor } from '../components/HomeMessageEditor';
+import { PopupEditor } from '../components/PopupEditor';
 import { QuotesEditor } from '../components/QuotesEditor';
+import { ReminderSlotsEditor } from '../components/ReminderSlotsEditor';
 import { TabIconsEditor } from '../components/TabIconsEditor';
 import { TermsEditor } from '../components/TermsEditor';
 import { TextsEditor } from '../components/TextsEditor';
@@ -21,7 +23,9 @@ type Tab =
   | 'texts'
   | 'terms'
   | 'home'
-  | 'tabIcons';
+  | 'tabIcons'
+  | 'reminders'
+  | 'popup';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'analytics', label: 'נתונים' },
@@ -34,6 +38,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'terms', label: 'תקנון' },
   { id: 'home', label: 'עמוד הבית' },
   { id: 'tabIcons', label: 'אייקוני תפריט' },
+  { id: 'reminders', label: 'תזכורות ושעות' },
+  { id: 'popup', label: 'פופ-אפ פתיחה' },
 ];
 
 type DashboardProps = {
@@ -74,6 +80,8 @@ export function Dashboard({ onSignOut }: DashboardProps) {
         {tab === 'terms' ? <TermsEditor /> : null}
         {tab === 'home' ? <HomeMessageEditor /> : null}
         {tab === 'tabIcons' ? <TabIconsEditor /> : null}
+        {tab === 'reminders' ? <ReminderSlotsEditor /> : null}
+        {tab === 'popup' ? <PopupEditor /> : null}
       </div>
     </div>
   );

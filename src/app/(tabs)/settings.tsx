@@ -1,18 +1,19 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, FileText } from 'lucide-react-native';
+import { ChevronLeft, FileText, Plus, Trash2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
-import { reminderSlots } from '@/constants/content';
 import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { kesherMode } from '@/services/kesher';
 import { syncSchedule } from '@/services/notifications';
-import { useAppStore, useCategories, useCoinAmounts } from '@/store/app-store';
-import type { CategoryId, ReminderSlot } from '@/types';
+import { useAllReminderSlots, useAppStore, useCategories, useCoinAmounts } from '@/store/app-store';
+import type { CategoryId } from '@/types';
 import { formatCurrency, formatTime } from '@/utils/format';
+
+const MINUTE_OPTIONS = [0, 15, 30, 45];
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -23,16 +24,39 @@ export default function SettingsScreen() {
   const updateSettings = useAppStore((state) => state.updateSettings);
   const categories = useCategories();
   const coinAmounts = useCoinAmounts();
+  const allSlots = useAllReminderSlots();
 
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [customHour, setCustomHour] = useState('20');
+  const [customMinute, setCustomMinute] = useState(0);
+  const [customLabel, setCustomLabel] = useState('');
 
   // Any change to reminders or auto-pilot rebuilds the whole local schedule.
   useEffect(() => {
-    void syncSchedule(settings).then((granted) => setPermissionDenied(!granted));
-  }, [settings]);
+    void syncSchedule(settings, allSlots).then((granted) => setPermissionDenied(!granted));
+  }, [settings, allSlots]);
 
-  function toggleReminder(slot: ReminderSlot, enabled: boolean) {
-    updateSettings({ reminders: { ...settings.reminders, [slot]: enabled } });
+  function toggleReminder(slotId: string, enabled: boolean) {
+    updateSettings({ reminders: { ...settings.reminders, [slotId]: enabled } });
+  }
+
+  function addCustomReminder() {
+    const hour = Math.max(0, Math.min(23, Number(customHour) || 0));
+    const id = `custom-${Date.now().toString(36)}`;
+    const slot = { id, label: customLabel.trim() || 'תזכורת אישית', hour, minute: customMinute, isCustom: true };
+
+    updateSettings({
+      customReminders: [...settings.customReminders, slot],
+      reminders: { ...settings.reminders, [id]: true },
+    });
+    setCustomLabel('');
+  }
+
+  function removeCustomReminder(id: string) {
+    updateSettings({
+      customReminders: settings.customReminders.filter((slot) => slot.id !== id),
+      reminders: { ...settings.reminders, [id]: false },
+    });
   }
 
   return (
@@ -50,26 +74,76 @@ export default function SettingsScreen() {
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>תזכורות יומיות</Text>
         <Card padded={false}>
-          {(Object.keys(reminderSlots) as ReminderSlot[]).map((slot, index) => (
+          {allSlots.map((slot, index) => (
             <View
-              key={slot}
+              key={slot.id}
               style={[
                 styles.row,
                 index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
               ]}>
               <View style={styles.rowText}>
-                <Text style={[styles.rowTitle, { color: colors.text }]}>{reminderSlots[slot].label}</Text>
+                <Text style={[styles.rowTitle, { color: colors.text }]}>{slot.label}</Text>
                 <Text style={[styles.rowMeta, { color: colors.textMuted }]}>
-                  {formatTime(reminderSlots[slot].hour, reminderSlots[slot].minute)}
+                  {formatTime(slot.hour, slot.minute)}
                 </Text>
               </View>
+              {slot.isCustom ? (
+                <Pressable accessibilityRole="button" onPress={() => removeCustomReminder(slot.id)}>
+                  <Trash2 size={18} color={colors.danger} strokeWidth={1.75} />
+                </Pressable>
+              ) : null}
               <Switch
-                value={settings.reminders[slot]}
-                onValueChange={(enabled) => toggleReminder(slot, enabled)}
+                value={settings.reminders[slot.id] ?? false}
+                onValueChange={(enabled) => toggleReminder(slot.id, enabled)}
                 trackColor={{ true: palette.gold, false: colors.border }}
               />
             </View>
           ))}
+
+          <View style={[styles.customForm, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}>
+            <Text style={[styles.label, { color: colors.textMuted, marginTop: 0 }]}>הוספת תזכורת בשעה חופשית</Text>
+            <View style={styles.customRow}>
+              <TextInput
+                value={customHour}
+                onChangeText={setCustomHour}
+                keyboardType="number-pad"
+                maxLength={2}
+                placeholder="שעה"
+                placeholderTextColor={colors.textMuted}
+                style={[styles.hourInput, { color: colors.text, borderColor: colors.border }]}
+              />
+              <View style={styles.optionRow}>
+                {MINUTE_OPTIONS.map((minute) => (
+                  <Pressable
+                    key={minute}
+                    onPress={() => setCustomMinute(minute)}
+                    style={[
+                      styles.option,
+                      {
+                        borderColor: customMinute === minute ? palette.gold : colors.border,
+                        backgroundColor: customMinute === minute ? 'rgba(197,160,89,0.14)' : 'transparent',
+                      },
+                    ]}>
+                    <Text style={[styles.optionText, { color: colors.text }]}>{String(minute).padStart(2, '0')}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+            <TextInput
+              value={customLabel}
+              onChangeText={setCustomLabel}
+              placeholder="כיתוב אישי (אופציונלי)"
+              placeholderTextColor={colors.textMuted}
+              style={[styles.labelInput, { color: colors.text, borderColor: colors.border }]}
+            />
+            <Pressable
+              onPress={addCustomReminder}
+              style={[styles.addButton, { borderColor: palette.gold }]}
+              accessibilityRole="button">
+              <Plus size={16} color={palette.gold} strokeWidth={1.75} />
+              <Text style={[styles.addButtonText, { color: palette.gold }]}>הוספה</Text>
+            </Pressable>
+          </View>
         </Card>
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>צדקה ללא לחיצה</Text>
@@ -141,20 +215,20 @@ export default function SettingsScreen() {
 
               <Text style={[styles.label, { color: colors.textMuted }]}>שעה</Text>
               <View style={styles.optionRow}>
-                {(Object.keys(reminderSlots) as ReminderSlot[]).map((slot) => (
+                {allSlots.map((slot) => (
                   <Pressable
-                    key={slot}
-                    onPress={() => updateSettings({ autoPilot: { ...settings.autoPilot, slot } })}
+                    key={slot.id}
+                    onPress={() => updateSettings({ autoPilot: { ...settings.autoPilot, slotId: slot.id } })}
                     style={[
                       styles.option,
                       {
-                        borderColor: settings.autoPilot.slot === slot ? palette.gold : colors.border,
+                        borderColor: settings.autoPilot.slotId === slot.id ? palette.gold : colors.border,
                         backgroundColor:
-                          settings.autoPilot.slot === slot ? 'rgba(197,160,89,0.14)' : 'transparent',
+                          settings.autoPilot.slotId === slot.id ? 'rgba(197,160,89,0.14)' : 'transparent',
                       },
                     ]}>
                     <Text style={[styles.optionText, { color: colors.text }]}>
-                      {formatTime(reminderSlots[slot].hour, reminderSlots[slot].minute)}
+                      {formatTime(slot.hour, slot.minute)}
                     </Text>
                   </Pressable>
                 ))}
@@ -245,6 +319,45 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     textAlign: 'right',
     marginTop: 2,
+  },
+  customForm: {
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  customRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  hourInput: {
+    width: 56,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.sm,
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+  },
+  labelInput: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.sm,
+    fontSize: fontSize.sm,
+    textAlign: 'right',
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.xs + 2,
+  },
+  addButtonText: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
   },
   autoPilotBody: {
     paddingHorizontal: spacing.md,

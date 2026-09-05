@@ -73,17 +73,32 @@ export type Streak = {
   lastDonationDate: string | null;
 };
 
-export type ReminderSlot = 'morning' | 'afternoon' | 'evening' | 'preShabbat';
+/**
+ * A daily reminder/auto-pilot time. Admin-defined slots (synced from the
+ * `reminder_slots` table) are shared by everyone; a user can also add their
+ * own free-hour slots, kept only on their device (`isCustom: true`).
+ */
+export type ReminderSlot = {
+  id: Id;
+  /** Explanation text shown next to the time, e.g. "שחרית". */
+  label: string;
+  hour: number;
+  minute: number;
+  isCustom?: boolean;
+};
 
 export type AutoPilotSettings = {
   enabled: boolean;
   amount: number;
   categoryId: CategoryId;
-  slot: ReminderSlot;
+  slotId: string;
 };
 
 export type Settings = {
-  reminders: Record<ReminderSlot, boolean>;
+  /** Enabled state per reminder slot id (preset or custom). */
+  reminders: Record<string, boolean>;
+  /** Slots the user added themselves - device-local, not synced. */
+  customReminders: ReminderSlot[];
   autoPilot: AutoPilotSettings;
   soundEnabled: boolean;
   hapticsEnabled: boolean;

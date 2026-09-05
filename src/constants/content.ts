@@ -251,9 +251,22 @@ export const defaultTermsSections: readonly TermsSection[] = [
   },
 ] as const;
 
-export const reminderSlots: Record<ReminderSlot, { label: string; hour: number; minute: number }> = {
-  morning: { label: 'בוקר (אחרי שחרית)', hour: 8, minute: 0 },
-  afternoon: { label: 'צהריים (מנחה)', hour: 13, minute: 30 },
-  evening: { label: 'ערב (לפני מעריב)', hour: 19, minute: 0 },
-  preShabbat: { label: 'ערב שבת', hour: 14, minute: 0 },
+/** Admin-editable preset reminder/auto-pilot times - fallback only, see the
+ *  `reminder_slots` table. */
+export const defaultReminderSlots: readonly ReminderSlot[] = [
+  { id: 'morning', label: 'בוקר (אחרי שחרית)', hour: 8, minute: 0 },
+  { id: 'afternoon', label: 'צהריים (מנחה)', hour: 13, minute: 30 },
+  { id: 'evening', label: 'ערב (לפני מעריב)', hour: 19, minute: 0 },
+  { id: 'preShabbat', label: 'ערב שבת', hour: 14, minute: 0 },
+] as const;
+
+export type AppPopup = {
+  enabled: boolean;
+  imageUrl: string | null;
+  /** Opened externally on tap when set; otherwise tapping just navigates to
+   *  the giving screen. */
+  linkUrl: string | null;
 };
+
+/** Opening popup shown once per day when enabled - see the `app_popup` table. */
+export const defaultAppPopup: AppPopup = { enabled: false, imageUrl: null, linkUrl: null };
