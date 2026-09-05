@@ -15,6 +15,10 @@ import { pullProfile } from '@/services/sync';
 import { useAppStore, type DonationOutcome } from '@/store/app-store';
 import type { CategoryId, Donation, DonationSource } from '@/types';
 
+/** Hard ceiling for "צדקה ללא לחיצה" auto-pilot's daily amount - a manual
+ *  coin tap has no such cap, since the user is actively choosing it each time. */
+export const AUTO_PILOT_MAX_AMOUNT = 50;
+
 export type DonationInput = {
   amount: number;
   categoryId: CategoryId;

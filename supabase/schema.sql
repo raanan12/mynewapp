@@ -649,6 +649,26 @@ begin
 end;
 $$;
 
+-- Real per-day guard for auto-pilot, checked by the `kesher-charge` Edge
+-- Function BEFORE it charges the card - the client-side lock in
+-- useAutoPilot.ts only protects against overlapping calls within one app
+-- session, not a second app launch (or device) racing the first.
+create or replace function public.has_auto_donation_today(p_user_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.donations
+    where user_id = p_user_id
+      and source = 'auto'
+      and status = 'completed'
+      and (created_at at time zone 'Asia/Jerusalem')::date = (now() at time zone 'Asia/Jerusalem')::date
+  );
+$$;
+
 -- ----------------------------------------------------------- admin metrics --
 create or replace function public.admin_stats()
 returns json

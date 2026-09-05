@@ -146,8 +146,16 @@ Deno.serve(async (request) => {
   }
 
   const amount = Number(body.amount);
+  const source = body.source ?? 'manual';
+
   if (!Number.isFinite(amount) || amount <= 0 || amount > 5000) {
     return json({ error: 'סכום החיוב אינו תקין' }, 400);
+  }
+  // Mirrors AUTO_PILOT_MAX_AMOUNT in src/services/wallet.ts - enforced here
+  // too since this is the only place that can't be bypassed by a stale or
+  // tampered client.
+  if (source === 'auto' && amount > 50) {
+    return json({ error: 'סכום הטייס האוטומטי גבוה מהמותר' }, 400);
   }
   if (!body.category) {
     return json({ error: 'חסר ייעוד לתרומה' }, 400);
@@ -156,6 +164,23 @@ Deno.serve(async (request) => {
   const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false },
   });
+
+  // The real fix for auto-pilot double-charging: no client-side lock can
+  // protect against a second app launch (or second device) racing the
+  // first, but the card must never be charged twice for one day regardless.
+  if (source === 'auto') {
+    const { data: alreadyDonated, error: guardError } = await admin.rpc('has_auto_donation_today', {
+      p_user_id: auth.user.id,
+    });
+
+    if (guardError) {
+      console.error('auto-pilot daily guard check failed', guardError);
+      return json({ error: 'לא ניתן לאמת את מצב הטייס האוטומטי' }, 500);
+    }
+    if (alreadyDonated) {
+      return json({ error: 'התרומה האוטומטית של היום כבר בוצעה' }, 409);
+    }
+  }
 
   const [{ data: profile, error: profileError }, { data: settings, error: settingsError }] =
     await Promise.all([
@@ -209,7 +234,7 @@ Deno.serve(async (request) => {
     p_category: body.category,
     p_dedication: body.dedication ?? null,
     p_kesher_transaction_id: transactionId,
-    p_source: body.source ?? 'manual',
+    p_source: source,
   });
 
   if (donationError) {

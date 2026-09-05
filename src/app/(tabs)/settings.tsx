@@ -9,6 +9,7 @@ import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constan
 import { useTheme } from '@/hooks/use-theme';
 import { kesherMode } from '@/services/kesher';
 import { syncSchedule } from '@/services/notifications';
+import { AUTO_PILOT_MAX_AMOUNT } from '@/services/wallet';
 import { useAllReminderSlots, useAppStore, useCategories, useCoinAmounts } from '@/store/app-store';
 import type { CategoryId } from '@/types';
 import { formatCurrency, formatTime } from '@/utils/format';
@@ -35,6 +36,13 @@ export default function SettingsScreen() {
   useEffect(() => {
     void syncSchedule(settings, allSlots).then((granted) => setPermissionDenied(!granted));
   }, [settings, allSlots]);
+
+  // Corrects a daily amount saved before the cap existed.
+  useEffect(() => {
+    if (settings.autoPilot.amount > AUTO_PILOT_MAX_AMOUNT) {
+      updateSettings({ autoPilot: { ...settings.autoPilot, amount: AUTO_PILOT_MAX_AMOUNT } });
+    }
+  }, [settings.autoPilot.amount, settings.autoPilot, updateSettings]);
 
   function toggleReminder(slotId: string, enabled: boolean) {
     updateSettings({ reminders: { ...settings.reminders, [slotId]: enabled } });
@@ -166,9 +174,13 @@ export default function SettingsScreen() {
 
           {settings.autoPilot.enabled ? (
             <View style={styles.autoPilotBody}>
-              <Text style={[styles.label, { color: colors.textMuted }]}>סכום יומי</Text>
+              <Text style={[styles.label, { color: colors.textMuted }]}>
+                סכום יומי (מקסימום {formatCurrency(AUTO_PILOT_MAX_AMOUNT)})
+              </Text>
               <View style={styles.optionRow}>
-                {coinAmounts.map((amount) => (
+                {coinAmounts
+                  .filter((amount) => amount <= AUTO_PILOT_MAX_AMOUNT)
+                  .map((amount) => (
                   <Pressable
                     key={amount}
                     onPress={() => updateSettings({ autoPilot: { ...settings.autoPilot, amount } })}
