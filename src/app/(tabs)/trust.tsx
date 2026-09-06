@@ -1,16 +1,23 @@
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
-import { Award, ExternalLink, PlayCircle, ShieldCheck } from 'lucide-react-native';
-import { useState } from 'react';
+import { Award, ExternalLink, PlayCircle } from 'lucide-react-native';
+import { useState, type ReactNode } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
-import { ZoomableImage } from '@/components/zoomable-image';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
+import { ZoomableImage } from '@/components/zoomable-image';
 import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useApprovals, useAppText, useCategories, useCategoryTotals, useCharities, useTotals } from '@/store/app-store';
+import {
+  useApprovals,
+  useAppText,
+  useCategories,
+  useCategoryTotals,
+  useCharities,
+  useTotals,
+  useTrustSections,
+} from '@/store/app-store';
 import type { RabbinicalApproval } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -65,31 +72,16 @@ export default function TrustScreen() {
   const approvals = useApprovals();
   const byCategory = useCategoryTotals();
   const totals = useTotals();
-  const associationName = useAppText('association_name');
-  const associationNumber = useAppText('association_number');
-  const associationClause46 = useAppText('association_clause46');
   const screenTitle = useAppText('trust_title');
-  const approvalsSectionTitle = useAppText('approvals_section_title');
+  const logoUrl = useAppText('trust_logo_url');
+  const sections = useTrustSections();
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
   const [expandedCharity, setExpandedCharity] = useState<string | null>(null);
 
-  return (
-    <Screen padded={false} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>{screenTitle}</Text>
-
-        <Card elevated>
-          <View style={styles.badgeRow}>
-            <ShieldCheck size={20} color={palette.gold} strokeWidth={1.75} />
-            <Text style={[styles.badgeText, { color: colors.text }]}>{associationClause46}</Text>
-          </View>
-          <Text style={[styles.body, { color: colors.textMuted }]}>
-            {associationName} · ע.ר. {associationNumber}. כל תרומה מזכה בקבלה דיגיטלית המוכרת
-            לצורכי החזר מס, ונשלחת אוטומטית עם השלמת התרומה.
-          </Text>
-        </Card>
-
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>{approvalsSectionTitle}</Text>
+  function renderApprovals(title: string) {
+    return (
+      <View key="approvals">
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.gallery}>
           {approvals.map((approval) => (
             <Pressable key={approval.id} onPress={() => setPreview(approval)}>
@@ -127,8 +119,14 @@ export default function TrustScreen() {
             </Pressable>
           ))}
         </ScrollView>
+      </View>
+    );
+  }
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>פילוח הנתינה שלכם</Text>
+  function renderBreakdown(title: string) {
+    return (
+      <View key="breakdown">
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
         <Card>
           {categories.map((category) => {
             const amount = byCategory[category.id];
@@ -151,8 +149,14 @@ export default function TrustScreen() {
             );
           })}
         </Card>
+      </View>
+    );
+  }
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>הארגונים הנתמכים</Text>
+  function renderCharities(title: string) {
+    return (
+      <View key="charities">
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
         {categories.map((category) => (
           <Card key={category.id}>
             <Text style={[styles.categoryName, { color: colors.text }]}>{category.label}</Text>
@@ -211,6 +215,24 @@ export default function TrustScreen() {
               })}
           </Card>
         ))}
+      </View>
+    );
+  }
+
+  const SECTION_RENDERERS: Record<'approvals' | 'breakdown' | 'charities', (title: string) => ReactNode> = {
+    approvals: renderApprovals,
+    breakdown: renderBreakdown,
+    charities: renderCharities,
+  };
+
+  return (
+    <Screen padded={false} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {logoUrl ? <Image source={{ uri: logoUrl }} style={styles.logo} contentFit="contain" /> : null}
+
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{screenTitle}</Text>
+
+        {sections.map((section) => SECTION_RENDERERS[section.id](section.title))}
       </ScrollView>
 
       <Modal visible={preview !== null} transparent animationType="fade" onRequestClose={() => setPreview(null)}>
@@ -259,22 +281,10 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: spacing.sm,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  badgeText: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    fontWeight: '800',
-    textAlign: 'right',
-  },
-  body: {
-    fontSize: fontSize.sm,
-    lineHeight: 22,
-    textAlign: 'right',
-    marginTop: spacing.sm,
+  logo: {
+    width: '100%',
+    height: 64,
+    marginBottom: spacing.xs,
   },
   gallery: {
     gap: spacing.sm,

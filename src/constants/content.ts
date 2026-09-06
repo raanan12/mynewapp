@@ -9,7 +9,7 @@
  * src/services/sync.ts).
  */
 
-import type { Category, Charity, Quote, RabbinicalApproval, ReminderSlot } from '@/types';
+import type { Category, Charity, Quote, RabbinicalApproval, ReminderSlot, TrustSection } from '@/types';
 
 export const defaultCategories: readonly Category[] = [
   {
@@ -190,7 +190,8 @@ export const defaultTexts: Record<string, string> = {
   terms_page_title: 'תקנון, תנאי שימוש ומדיניות פרטיות',
   trust_title: 'לאן הכסף הולך',
   wallet_title: 'כרטיס אשראי',
-  approvals_section_title: 'הסכמות רבנים',
+  /** Empty means no logo shown at the top of the transparency screen. */
+  trust_logo_url: '',
   /** Empty means "use the bundled app icon" - see TzedakahBox's `logoUrl` prop. */
   box_logo_url: '',
   /** Empty means "use the hardcoded default icon for this tab" - either an
@@ -271,3 +272,11 @@ export type AppPopup = {
 
 /** Opening popup shown once per day when enabled - see the `app_popup` table. */
 export const defaultAppPopup: AppPopup = { enabled: false, imageUrl: null, linkUrl: null };
+
+/** Order/title/visibility for the transparency screen's sections - fallback
+ *  only, see the `trust_sections` table. */
+export const defaultTrustSections: readonly TrustSection[] = [
+  { id: 'approvals', title: 'הסכמות רבנים', sortOrder: 1, visible: true },
+  { id: 'breakdown', title: 'פילוח הנתינה שלכם', sortOrder: 2, visible: true },
+  { id: 'charities', title: 'הארגונים הנתמכים', sortOrder: 3, visible: true },
+] as const;

@@ -232,7 +232,7 @@ insert into public.app_texts (id, value) values
   ('terms_page_title', 'תקנון, תנאי שימוש ומדיניות פרטיות'),
   ('trust_title', 'לאן הכסף הולך'),
   ('wallet_title', 'כרטיס אשראי'),
-  ('approvals_section_title', 'הסכמות רבנים'),
+  ('trust_logo_url', ''),
   ('box_logo_url', ''),
   ('tab_icon_giving', ''),
   ('tab_icon_wallet', ''),
@@ -330,6 +330,29 @@ create table if not exists public.app_popup (
 insert into public.app_popup (id) values ('default')
 on conflict (id) do nothing;
 
+-- ------------------------------------------------------------ trust_sections --
+-- Order/title/visibility for the transparency ("לאן הכסף הולך") screen's
+-- sections. The data each section renders (approvals, category breakdown,
+-- charity list) is still edited via its own table - this only controls the
+-- section's title, order and whether it shows at all.
+create table if not exists public.trust_sections (
+  id text primary key,
+  title text not null,
+  sort_order integer not null default 0,
+  is_visible boolean not null default true
+);
+
+insert into public.trust_sections (id, title, sort_order) values
+  ('approvals', 'הסכמות רבנים', 1),
+  ('breakdown', 'פילוח הנתינה שלכם', 2),
+  ('charities', 'הארגונים הנתמכים', 3)
+on conflict (id) do nothing;
+
+-- Superseded by the row above - the tax-clause card that used to sit at
+-- the top of this screen moved to the wallet screen instead (see
+-- src/app/(tabs)/wallet.tsx), and this key's title is now trust_sections'.
+delete from public.app_texts where id = 'approvals_section_title';
+
 -- ---------------------------------------------------------- kesher_settings --
 -- Non-secret Kesher (קשר סליקה) routing ids. The API username/password stay
 -- as Edge Function secrets and never appear in this table.
@@ -370,6 +393,7 @@ alter table public.terms_sections enable row level security;
 alter table public.home_message enable row level security;
 alter table public.reminder_slots enable row level security;
 alter table public.app_popup enable row level security;
+alter table public.trust_sections enable row level security;
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -471,6 +495,13 @@ create policy "public read app popup" on public.app_popup
   for select using (true);
 drop policy if exists "admin writes app popup" on public.app_popup;
 create policy "admin writes app popup" on public.app_popup
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "public read trust sections" on public.trust_sections;
+create policy "public read trust sections" on public.trust_sections
+  for select using (true);
+drop policy if exists "admin writes trust sections" on public.trust_sections;
+create policy "admin writes trust sections" on public.trust_sections
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- --------------------------------------------------- profile bootstrapping --

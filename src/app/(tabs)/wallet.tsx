@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { CreditCard, Trash2 } from 'lucide-react-native';
+import { CreditCard, ShieldCheck, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -7,7 +7,7 @@ import { ReceiptDetailsCard } from '@/components/receipt-details-card';
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { fontSize, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
+import { fontSize, palette, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { kesherMode } from '@/services/kesher';
 import { removeSavedCard } from '@/services/wallet';
@@ -19,6 +19,9 @@ export default function WalletScreen() {
 
   const card = useAppStore((state) => state.card);
   const screenTitle = useAppText('wallet_title');
+  const associationName = useAppText('association_name');
+  const associationNumber = useAppText('association_number');
+  const associationClause46 = useAppText('association_clause46');
   const [removingCard, setRemovingCard] = useState(false);
 
   function confirmRemoveCard() {
@@ -44,6 +47,17 @@ export default function WalletScreen() {
     <Screen padded={false} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={[styles.screenTitle, { color: colors.text }]}>{screenTitle}</Text>
+
+        <Card elevated>
+          <View style={styles.badgeRow}>
+            <ShieldCheck size={20} color={palette.gold} strokeWidth={1.75} />
+            <Text style={[styles.badgeText, { color: colors.text }]}>{associationClause46}</Text>
+          </View>
+          <Text style={[styles.body, { color: colors.textMuted }]}>
+            {associationName} · ע.ר. {associationNumber}. כל תרומה מזכה בקבלה דיגיטלית המוכרת
+            לצורכי החזר מס, ונשלחת אוטומטית עם השלמת התרומה.
+          </Text>
+        </Card>
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>אמצעי תשלום</Text>
         {card ? (
@@ -107,6 +121,23 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fontSize.md,
     fontWeight: '800',
+    textAlign: 'right',
+    marginTop: spacing.sm,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  badgeText: {
+    flex: 1,
+    fontSize: fontSize.sm,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  body: {
+    fontSize: fontSize.sm,
+    lineHeight: 22,
     textAlign: 'right',
     marginTop: spacing.sm,
   },

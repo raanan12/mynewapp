@@ -115,6 +115,7 @@ export async function pullContent(): Promise<void> {
     { data: homeMessageRow },
     { data: reminderSlotRows },
     { data: popupRow },
+    { data: trustSectionRows },
   ] = await Promise.all([
     supabase.from('categories').select('*').eq('is_active', true).order('sort_order'),
     supabase.from('giving_settings').select('coin_amounts').eq('id', 'default').maybeSingle(),
@@ -125,6 +126,7 @@ export async function pullContent(): Promise<void> {
     supabase.from('home_message').select('text, image_url').eq('id', 'default').maybeSingle(),
     supabase.from('reminder_slots').select('*').order('sort_order'),
     supabase.from('app_popup').select('enabled, image_url, link_url').eq('id', 'default').maybeSingle(),
+    supabase.from('trust_sections').select('*').order('sort_order'),
   ]);
 
   const current = useAppStore.getState();
@@ -184,6 +186,14 @@ export async function pullContent(): Promise<void> {
     appPopup: popupRow
       ? { enabled: popupRow.enabled, imageUrl: popupRow.image_url, linkUrl: popupRow.link_url }
       : current.appPopup,
+    trustSections: trustSectionRows?.length
+      ? trustSectionRows.map((row) => ({
+          id: row.id as 'approvals' | 'breakdown' | 'charities',
+          title: row.title,
+          sortOrder: row.sort_order,
+          visible: row.is_visible,
+        }))
+      : current.trustSections,
   });
 }
 

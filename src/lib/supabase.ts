@@ -178,6 +178,15 @@ export type PushTokenRow = {
   updated_at: string;
 };
 
+/** Order/title/visibility for the transparency screen's sections - see
+ *  `defaultTrustSections` in src/constants/content.ts. */
+export type TrustSectionRow = {
+  id: string;
+  title: string;
+  sort_order: number;
+  is_visible: boolean;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -264,6 +273,12 @@ export type Database = {
         Row: PushTokenRow;
         Insert: PushTokenRow;
         Update: Partial<PushTokenRow>;
+        Relationships: [];
+      };
+      trust_sections: {
+        Row: TrustSectionRow;
+        Insert: TrustSectionRow;
+        Update: Partial<TrustSectionRow>;
         Relationships: [];
       };
     };

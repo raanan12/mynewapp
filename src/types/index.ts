@@ -96,6 +96,19 @@ export type ReminderSlot = {
   isCustom?: boolean;
 };
 
+/**
+ * One reorderable, hideable, title-editable section of the transparency
+ * ("לאן הכסף הולך") screen - the actual data each section renders
+ * (approvals, category breakdown, charity list) is still admin-edited
+ * elsewhere; this only controls the section's title, order and visibility.
+ */
+export type TrustSection = {
+  id: 'approvals' | 'breakdown' | 'charities';
+  title: string;
+  sortOrder: number;
+  visible: boolean;
+};
+
 export type AutoPilotSettings = {
   enabled: boolean;
   amount: number;

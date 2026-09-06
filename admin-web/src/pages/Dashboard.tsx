@@ -13,6 +13,7 @@ import { ReminderSlotsEditor } from '../components/ReminderSlotsEditor';
 import { TabIconsEditor } from '../components/TabIconsEditor';
 import { TermsEditor } from '../components/TermsEditor';
 import { TextsEditor } from '../components/TextsEditor';
+import { TrustSectionsEditor } from '../components/TrustSectionsEditor';
 
 type Tab =
   | 'analytics'
@@ -27,7 +28,8 @@ type Tab =
   | 'tabIcons'
   | 'reminders'
   | 'popup'
-  | 'push';
+  | 'push'
+  | 'trustLayout';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'analytics', label: 'נתונים' },
@@ -43,6 +45,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'reminders', label: 'תזכורות ושעות' },
   { id: 'popup', label: 'פופ-אפ פתיחה' },
   { id: 'push', label: 'התראות Push' },
+  { id: 'trustLayout', label: 'עמוד שקיפות' },
 ];
 
 type DashboardProps = {
@@ -86,6 +89,7 @@ export function Dashboard({ onSignOut }: DashboardProps) {
         {tab === 'reminders' ? <ReminderSlotsEditor /> : null}
         {tab === 'popup' ? <PopupEditor /> : null}
         {tab === 'push' ? <PushEditor /> : null}
+        {tab === 'trustLayout' ? <TrustSectionsEditor /> : null}
       </div>
     </div>
   );

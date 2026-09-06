@@ -27,6 +27,7 @@ import {
   defaultReminderSlots,
   defaultTermsSections,
   defaultTexts,
+  defaultTrustSections,
   type AppPopup,
   type HomeMessage,
   type TermsSection,
@@ -41,6 +42,7 @@ import type {
   ReminderSlot,
   Settings,
   Streak,
+  TrustSection,
 } from '@/types';
 import { toDateKey } from '@/utils/format';
 
@@ -82,6 +84,8 @@ type AppState = {
   reminderPresets: ReminderSlot[];
   /** Opening popup shown once per day on the giving screen. */
   appPopup: AppPopup;
+  /** Order/title/visibility for the transparency screen's sections. */
+  trustSections: TrustSection[];
   /** Legal record of terms-of-service acceptance - null until the user
    *  explicitly accepts on the terms screen, which gates card entry. */
   termsAcceptedAt: string | null;
@@ -105,6 +109,7 @@ type AppState = {
     homeMessage: HomeMessage;
     reminderPresets: ReminderSlot[];
     appPopup: AppPopup;
+    trustSections: TrustSection[];
   }) => void;
   acceptTerms: (version: string) => void;
   markOnboarded: () => void;
@@ -155,6 +160,7 @@ export const useAppStore = create<AppState>()(
       homeMessage: { ...defaultHomeMessage },
       reminderPresets: [...defaultReminderSlots],
       appPopup: { ...defaultAppPopup },
+      trustSections: [...defaultTrustSections],
       termsAcceptedAt: null,
       termsVersion: null,
       hasOnboarded: false,
@@ -191,6 +197,7 @@ export const useAppStore = create<AppState>()(
         homeMessage,
         reminderPresets,
         appPopup,
+        trustSections,
       }) =>
         set({
           categories,
@@ -202,6 +209,7 @@ export const useAppStore = create<AppState>()(
           homeMessage,
           reminderPresets,
           appPopup,
+          trustSections,
         }),
 
       acceptTerms: (version) => set({ termsAcceptedAt: new Date().toISOString(), termsVersion: version }),
@@ -224,6 +232,7 @@ export const useAppStore = create<AppState>()(
           homeMessage: { ...defaultHomeMessage },
           reminderPresets: [...defaultReminderSlots],
           appPopup: { ...defaultAppPopup },
+          trustSections: [...defaultTrustSections],
           termsAcceptedAt: null,
           termsVersion: null,
           hasOnboarded: false,
@@ -373,6 +382,14 @@ export const useTermsSections = () => useAppStore((state) => state.termsSections
 export const useHomeMessage = () => useAppStore((state) => state.homeMessage);
 
 export const useAppPopup = () => useAppStore((state) => state.appPopup);
+
+/** Visible trust-screen sections, sorted by admin-set order. */
+export const useTrustSections = () =>
+  useAppStore(
+    useShallow((state) =>
+      state.trustSections.filter((section) => section.visible).sort((a, b) => a.sortOrder - b.sortOrder)
+    )
+  );
 
 /** Admin presets + the user's own custom slots, combined - what reminder
  *  toggles and the auto-pilot time picker both iterate over. */
