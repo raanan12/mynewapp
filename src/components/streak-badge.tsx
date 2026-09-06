@@ -36,7 +36,7 @@ export function StreakBadge({ days, active, compact = false }: StreakBadgeProps)
         {days}
       </Text>
       <Text style={[styles.label, { color: colors.textMuted }]}>
-        {days === 1 ? 'יום' : 'ימי רצף'}
+        {days === 1 ? 'יום' : 'ימים רצופים'}
       </Text>
     </View>
   );
