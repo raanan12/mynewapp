@@ -339,8 +339,14 @@ create table if not exists public.trust_sections (
   id text primary key,
   title text not null,
   sort_order integer not null default 0,
-  is_visible boolean not null default true
+  is_visible boolean not null default true,
+  -- Only used by admin-added custom sections (id not 'approvals'/
+  -- 'breakdown'/'charities') - the three fixed sections render real data
+  -- instead. Same light markdown as a charity's long description.
+  body text
 );
+
+alter table public.trust_sections add column if not exists body text;
 
 insert into public.trust_sections (id, title, sort_order) values
   ('approvals', 'הסכמות רבנים', 1),

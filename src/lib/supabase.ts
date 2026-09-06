@@ -185,6 +185,7 @@ export type TrustSectionRow = {
   title: string;
   sort_order: number;
   is_visible: boolean;
+  body: string | null;
 };
 
 export type Database = {

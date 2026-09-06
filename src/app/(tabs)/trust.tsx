@@ -18,7 +18,7 @@ import {
   useTotals,
   useTrustSections,
 } from '@/store/app-store';
-import type { RabbinicalApproval } from '@/types';
+import { FIXED_TRUST_SECTION_IDS, type RabbinicalApproval } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
 /** Splits "**bold**" spans out of a plain line of text. */
@@ -219,7 +219,18 @@ export default function TrustScreen() {
     );
   }
 
-  const SECTION_RENDERERS: Record<'approvals' | 'breakdown' | 'charities', (title: string) => ReactNode> = {
+  function renderCustom(id: string, title: string, body: string) {
+    return (
+      <View key={id}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
+        <Card>
+          <RichText text={body} color={colors.textMuted} />
+        </Card>
+      </View>
+    );
+  }
+
+  const FIXED_RENDERERS: Record<'approvals' | 'breakdown' | 'charities', (title: string) => ReactNode> = {
     approvals: renderApprovals,
     breakdown: renderBreakdown,
     charities: renderCharities,
@@ -232,7 +243,11 @@ export default function TrustScreen() {
 
         <Text style={[styles.screenTitle, { color: colors.text }]}>{screenTitle}</Text>
 
-        {sections.map((section) => SECTION_RENDERERS[section.id](section.title))}
+        {sections.map((section) =>
+          (FIXED_TRUST_SECTION_IDS as readonly string[]).includes(section.id)
+            ? FIXED_RENDERERS[section.id as 'approvals' | 'breakdown' | 'charities'](section.title)
+            : renderCustom(section.id, section.title, section.body ?? '')
+        )}
       </ScrollView>
 
       <Modal visible={preview !== null} transparent animationType="fade" onRequestClose={() => setPreview(null)}>

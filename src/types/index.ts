@@ -96,17 +96,24 @@ export type ReminderSlot = {
   isCustom?: boolean;
 };
 
+/** The three fixed sections' data comes from elsewhere (approvals,
+ *  category breakdown, charity list); anything else is a fully
+ *  admin-authored section - title + free text, nothing more. */
+export const FIXED_TRUST_SECTION_IDS = ['approvals', 'breakdown', 'charities'] as const;
+
 /**
  * One reorderable, hideable, title-editable section of the transparency
- * ("לאן הכסף הולך") screen - the actual data each section renders
- * (approvals, category breakdown, charity list) is still admin-edited
- * elsewhere; this only controls the section's title, order and visibility.
+ * ("לאן הכסף הולך") screen.
  */
 export type TrustSection = {
-  id: 'approvals' | 'breakdown' | 'charities';
+  id: string;
   title: string;
   sortOrder: number;
   visible: boolean;
+  /** Only rendered for custom sections (id not one of FIXED_TRUST_SECTION_IDS) -
+   *  same light markdown as a charity's long description ("## " sub-headers,
+   *  "**bold**" spans). */
+  body?: string | null;
 };
 
 export type AutoPilotSettings = {

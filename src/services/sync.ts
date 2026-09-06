@@ -188,10 +188,11 @@ export async function pullContent(): Promise<void> {
       : current.appPopup,
     trustSections: trustSectionRows?.length
       ? trustSectionRows.map((row) => ({
-          id: row.id as 'approvals' | 'breakdown' | 'charities',
+          id: row.id,
           title: row.title,
           sortOrder: row.sort_order,
           visible: row.is_visible,
+          body: row.body,
         }))
       : current.trustSections,
   });
