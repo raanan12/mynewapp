@@ -1,7 +1,10 @@
 import { Image } from 'expo-image';
+import * as WebBrowser from 'expo-web-browser';
 import { Award, ExternalLink, PlayCircle, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { ZoomableImage } from '@/components/zoomable-image';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
@@ -66,6 +69,7 @@ export default function TrustScreen() {
   const associationNumber = useAppText('association_number');
   const associationClause46 = useAppText('association_clause46');
   const screenTitle = useAppText('trust_title');
+  const approvalsSectionTitle = useAppText('approvals_section_title');
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
   const [expandedCharity, setExpandedCharity] = useState<string | null>(null);
 
@@ -85,7 +89,7 @@ export default function TrustScreen() {
           </Text>
         </Card>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>הסכמות רבנים</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{approvalsSectionTitle}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.gallery}>
           {approvals.map((approval) => (
             <Pressable key={approval.id} onPress={() => setPreview(approval)}>
@@ -101,7 +105,7 @@ export default function TrustScreen() {
                     {approval.rabbiPhotoUrl ? (
                       <Image source={{ uri: approval.rabbiPhotoUrl }} style={styles.rabbiAvatar} contentFit="cover" />
                     ) : null}
-                    <Text style={[styles.approvalName, { color: colors.text }]} numberOfLines={1}>
+                    <Text style={[styles.approvalName, { color: colors.text }]} numberOfLines={2}>
                       {approval.rabbiName}
                     </Text>
                   </View>
@@ -113,7 +117,7 @@ export default function TrustScreen() {
                     {approval.videoUrl ? (
                       <Pressable
                         accessibilityRole="button"
-                        onPress={() => approval.videoUrl && void Linking.openURL(approval.videoUrl)}>
+                        onPress={() => approval.videoUrl && void WebBrowser.openBrowserAsync(approval.videoUrl)}>
                         <PlayCircle size={16} color={colors.accent} strokeWidth={1.75} />
                       </Pressable>
                     ) : null}
@@ -210,22 +214,29 @@ export default function TrustScreen() {
       </ScrollView>
 
       <Modal visible={preview !== null} transparent animationType="fade" onRequestClose={() => setPreview(null)}>
-        <Pressable style={styles.previewBackdrop} onPress={() => setPreview(null)}>
+        <View style={styles.previewBackdrop}>
           {preview ? (
             <>
-              <Image source={{ uri: preview.imageUrl }} style={styles.previewImage} contentFit="contain" />
+              <ZoomableImage uri={preview.imageUrl} style={styles.previewImage} />
               <Text style={styles.previewCaption}>{preview.rabbiName}</Text>
               {preview.videoUrl ? (
                 <Pressable
                   style={styles.previewVideoButton}
-                  onPress={() => preview.videoUrl && void Linking.openURL(preview.videoUrl)}>
+                  onPress={() => preview.videoUrl && void WebBrowser.openBrowserAsync(preview.videoUrl)}>
                   <PlayCircle size={18} color={palette.cream} strokeWidth={1.75} />
                   <Text style={styles.previewCaption}>צפייה בברכה</Text>
                 </Pressable>
               ) : null}
+              <Pressable
+                style={styles.previewCloseButton}
+                onPress={() => setPreview(null)}
+                accessibilityRole="button"
+                accessibilityLabel="סגירה">
+                <Text style={styles.previewCaption}>סגירה ✕</Text>
+              </Pressable>
             </>
           ) : null}
-        </Pressable>
+        </View>
       </Modal>
     </Screen>
   );
@@ -282,9 +293,13 @@ const styles = StyleSheet.create({
   },
   approvalNameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing.xs,
-    minHeight: 20,
+    // Fixed to 2 lines' worth of the name, same reasoning as
+    // approvalTitle below - cards sit in a horizontal ScrollView row,
+    // which doesn't stretch siblings to match height, so a long name
+    // wrapping to 2 lines must not change this card's height vs. others.
+    height: 38,
   },
   rabbiAvatar: {
     width: 20,
@@ -432,5 +447,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+  },
+  previewCloseButton: {
+    position: 'absolute',
+    top: spacing.xl,
+    left: spacing.lg,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
 });

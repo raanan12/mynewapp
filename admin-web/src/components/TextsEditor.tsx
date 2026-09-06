@@ -33,7 +33,7 @@ const SECTIONS: { title: string; keys: string[] }[] = [
   },
   {
     title: 'כותרות מסכים נוספים',
-    keys: ['trust_title', 'wallet_title'],
+    keys: ['trust_title', 'wallet_title', 'approvals_section_title'],
   },
 ];
 
@@ -57,6 +57,7 @@ const KEY_LABELS: Record<string, string> = {
   terms_page_title: 'כותרת בתוך העמוד',
   trust_title: 'כותרת מסך שקיפות ("לאן הכסף הולך")',
   wallet_title: 'כותרת מסך הכרטיס',
+  approvals_section_title: 'כותרת סקשן הסכמות רבנים',
 };
 
 /** Free-form UI copy - tab bar labels and the association/tax-receipt

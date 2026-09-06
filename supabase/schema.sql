@@ -232,6 +232,7 @@ insert into public.app_texts (id, value) values
   ('terms_page_title', 'תקנון, תנאי שימוש ומדיניות פרטיות'),
   ('trust_title', 'לאן הכסף הולך'),
   ('wallet_title', 'כרטיס אשראי'),
+  ('approvals_section_title', 'הסכמות רבנים'),
   ('box_logo_url', ''),
   ('tab_icon_giving', ''),
   ('tab_icon_wallet', ''),

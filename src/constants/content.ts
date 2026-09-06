@@ -190,6 +190,7 @@ export const defaultTexts: Record<string, string> = {
   terms_page_title: 'תקנון, תנאי שימוש ומדיניות פרטיות',
   trust_title: 'לאן הכסף הולך',
   wallet_title: 'כרטיס אשראי',
+  approvals_section_title: 'הסכמות רבנים',
   /** Empty means "use the bundled app icon" - see TzedakahBox's `logoUrl` prop. */
   box_logo_url: '',
   /** Empty means "use the hardcoded default icon for this tab" - either an
