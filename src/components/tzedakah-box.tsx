@@ -19,7 +19,7 @@ export type TzedakahBoxHandle = {
 
 // Matches the source art's own aspect ratio (2016x2094) so the box never
 // gets stretched.
-export const BOX_WIDTH = 260;
+export const BOX_WIDTH = 300;
 export const BOX_HEIGHT = Math.round(BOX_WIDTH * (2094 / 2016));
 /** Vertical offset of the slot from the box center - coins aim here. */
 export const SLOT_OFFSET_Y = BOX_HEIGHT * 0.12 - BOX_HEIGHT / 2;

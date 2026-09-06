@@ -126,11 +126,9 @@ export default function GivingScreen() {
           <TzedakahBox ref={boxRef} todayTotal={formatCurrency(totals.givenToday)} logoUrl={boxLogoUrl} />
         </View>
 
-        <Text style={[styles.hint, { color: colors.textMuted }]}>
-          {totals.hasGivenToday
-            ? 'נתתם היום. אפשר להוסיף עוד.'
-            : 'החליקו מטבע למעלה או הקישו עליו'}
-        </Text>
+        {!totals.hasGivenToday ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>החליקו מטבע למעלה או הקישו עליו</Text>
+        ) : null}
 
         {charging ? <ProcessingBanner message="מבצעים את התרומה..." /> : null}
 
@@ -227,6 +225,7 @@ const styles = StyleSheet.create({
   },
   boxWrap: {
     alignItems: 'center',
+    marginTop: spacing.lg,
   },
   hint: {
     fontSize: fontSize.sm,
