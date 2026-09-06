@@ -89,7 +89,6 @@ async function fetchCard(userId: string): Promise<CardToken | null> {
   if (!data?.kesher_token) return null;
 
   return {
-    token: data.kesher_token,
     last4: data.kesher_card_last4 ?? '****',
     brand: data.kesher_card_brand ?? 'כרטיס אשראי',
     expiry: data.kesher_card_expiry ?? '',

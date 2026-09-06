@@ -31,7 +31,6 @@ function toCard(profile: ProfileRow): CardToken | null {
   if (!profile.kesher_token) return null;
 
   return {
-    token: profile.kesher_token,
     last4: profile.kesher_card_last4 ?? '****',
     brand: profile.kesher_card_brand ?? 'כרטיס אשראי',
     expiry: profile.kesher_card_expiry ?? '',

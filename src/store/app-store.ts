@@ -272,28 +272,42 @@ export const useAppStore = create<AppState>()(
       // `settings.customReminders`/`autoPilot.slotId` didn't exist before,
       // so a persisted v2 blob would otherwise load without them and crash
       // the first time something spreads `customReminders`.
-      version: 3,
+      // v4: CardToken dropped its `token` field - the client never needed
+      // the actual Kesher token (every charge looks it up server-side by
+      // user id), so there is no reason for it to sit in AsyncStorage.
+      // Strips it from whatever a pre-v4 install already wrote to disk
+      // instead of waiting for the next natural saveCard/sync to overwrite it.
+      version: 4,
       migrate: (persisted, fromVersion) => {
-        const state = persisted as { settings?: Partial<Settings> } | undefined;
-        if (fromVersion >= 3 || !state?.settings) return persisted;
+        let state = persisted as { settings?: Partial<Settings>; card?: Record<string, unknown> } | undefined;
+        if (!state) return persisted;
 
-        return {
-          ...state,
-          settings: {
-            ...defaultSettings,
-            ...state.settings,
-            customReminders: state.settings.customReminders ?? [],
-            autoPilot: {
-              ...defaultSettings.autoPilot,
-              ...state.settings.autoPilot,
-              slotId:
-                (state.settings.autoPilot as (Partial<Settings['autoPilot']> & { slot?: string }) | undefined)
-                  ?.slotId ??
-                (state.settings.autoPilot as { slot?: string } | undefined)?.slot ??
-                defaultSettings.autoPilot.slotId,
+        if (fromVersion < 3 && state.settings) {
+          state = {
+            ...state,
+            settings: {
+              ...defaultSettings,
+              ...state.settings,
+              customReminders: state.settings.customReminders ?? [],
+              autoPilot: {
+                ...defaultSettings.autoPilot,
+                ...state.settings.autoPilot,
+                slotId:
+                  (state.settings.autoPilot as (Partial<Settings['autoPilot']> & { slot?: string }) | undefined)
+                    ?.slotId ??
+                  (state.settings.autoPilot as { slot?: string } | undefined)?.slot ??
+                  defaultSettings.autoPilot.slotId,
+              },
             },
-          },
-        };
+          };
+        }
+
+        if (fromVersion < 4 && state.card && 'token' in state.card) {
+          const { token: _discardedToken, ...cardWithoutToken } = state.card;
+          state = { ...state, card: cardWithoutToken };
+        }
+
+        return state;
       },
     }
   )

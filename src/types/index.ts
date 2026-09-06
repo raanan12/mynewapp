@@ -57,9 +57,15 @@ export type Donation = {
   synced: boolean;
 };
 
-/** Tokenized card returned by the clearing provider. Never holds a full PAN. */
+/**
+ * Display-only record of a saved card, persisted on-device so the wallet
+ * screen can render instantly. Deliberately does NOT hold the actual Kesher
+ * token: nothing on the client ever needs it - every charge is made by the
+ * `kesher-charge` Edge Function, which looks the real token up server-side
+ * by user id, never from anything the client sends. Keeping it out of
+ * AsyncStorage means there is no sensitive value to leak from the device.
+ */
 export type CardToken = {
-  token: string;
   last4: string;
   brand: string;
   expiry: string;

@@ -147,7 +147,10 @@ async function callProxy<T>(path: string, body: unknown): Promise<T> {
 const httpAdapter: KesherAdapter = {
   async tokenizeCard(card) {
     const digits = card.number.replace(/\D/g, '');
-    const result = await callProxy<{ token: string }>('/tokenize', {
+    // The proxy's token is intentionally discarded - nothing on the client
+    // ever charges with it (see CardToken's doc comment), this call just
+    // has to succeed to prove the card is chargeable in sandbox mode.
+    await callProxy<{ token: string }>('/tokenize', {
       cardNumber: digits,
       expiry: card.expiry,
       cvv: card.cvv,
@@ -156,7 +159,6 @@ const httpAdapter: KesherAdapter = {
     });
 
     return {
-      token: result.token,
       last4: digits.slice(-4),
       brand: detectCardBrand(digits),
       expiry: card.expiry,
