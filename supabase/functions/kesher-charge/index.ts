@@ -28,6 +28,37 @@
  */
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { HDate, HebrewCalendar, flags } from 'npm:@hebcal/core@6.9.2';
+
+/**
+ * Mirrors src/lib/jewish-calendar.ts - keep the two in sync. This is the
+ * copy that actually matters: a stale/offline client can't be trusted to
+ * skip a Shabbat/Yom Tov charge itself. Israel's one-day Yom Tov schedule,
+ * same reasoning as everywhere else this app assumes Asia/Jerusalem.
+ *
+ * Deno edge functions run on UTC - near midnight in Israel that's a
+ * different calendar day than UTC's, so `date.getDay()` alone would be
+ * wrong for part of the day. `Intl.DateTimeFormat` extracts Israel's actual
+ * calendar day first; the plain-number `Date` constructor that follows has
+ * no timezone semantics of its own, so it reflects that day everywhere.
+ */
+function isShabbatOrYomTov(date: Date): boolean {
+  const [year, month, day] = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .format(date)
+    .split('-')
+    .map(Number);
+  const israelDate = new Date(year, month - 1, day);
+
+  if (israelDate.getDay() === 6) return true;
+
+  const events = HebrewCalendar.getHolidaysOnDate(new HDate(israelDate), true) ?? [];
+  return events.some((event: { getFlags: () => number }) => (event.getFlags() & flags.CHAG) !== 0);
+}
 
 type ChargeBody = {
   amount?: number;
@@ -156,6 +187,12 @@ Deno.serve(async (request) => {
   // tampered client.
   if (source === 'auto' && amount > 50) {
     return json({ error: 'סכום הטייס האוטומטי גבוה מהמותר' }, 400);
+  }
+  // No auto-pilot charge on Shabbat/Yom Tov, no matter what the client
+  // thinks the schedule is - this is the enforcement point that can't be
+  // bypassed by a stale app, a killed app, or a clock set wrong.
+  if (source === 'auto' && isShabbatOrYomTov(new Date())) {
+    return json({ error: 'הטייס האוטומטי לא פועל בשבת ובחג' }, 403);
   }
   if (!body.category) {
     return json({ error: 'חסר ייעוד לתרומה' }, 400);

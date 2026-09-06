@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.15",
     "@expo/vector-icons": "^15.0.3",
+    "@hebcal/core": "^6.9.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@supabase/supabase-js": "^2.112.4",
     "expo": "^57.0.0",

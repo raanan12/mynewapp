@@ -7,6 +7,7 @@
 
 import * as Notifications from 'expo-notifications';
 
+import { isShabbatOrYomTov } from '@/lib/jewish-calendar';
 import type { ReminderSlot, Settings } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
@@ -26,12 +27,20 @@ function triggerFor(slot: ReminderSlot): Notifications.SchedulableNotificationTr
 }
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  // Reminders/auto-pilot are scheduled as recurring OS-level triggers, so a
+  // day that happens to be Shabbat/Yom Tov can't be skipped when the
+  // schedule is built - only suppressed here, at actual delivery time. This
+  // only runs while the app process is alive (foreground or background);
+  // a fully-killed app still shows the OS notification natively, which no
+  // client-side check can prevent - the auto-pilot charge itself, unlike
+  // the notification, IS fully guarded server-side (see kesher-charge).
+  handleNotification: async () => {
+    if (isShabbatOrYomTov()) {
+      return { shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: false, shouldShowList: false };
+    }
+
+    return { shouldPlaySound: true, shouldSetBadge: false, shouldShowBanner: true, shouldShowList: true };
+  },
 });
 
 export async function requestPermission(): Promise<boolean> {

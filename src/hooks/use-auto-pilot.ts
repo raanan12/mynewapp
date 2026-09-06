@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
+import { isShabbatOrYomTov } from '@/lib/jewish-calendar';
 import { notifyDonationCompleted } from '@/services/notifications';
 import { AUTO_PILOT_MAX_AMOUNT, donateWithFunds } from '@/services/wallet';
 import { useAppStore } from '@/store/app-store';
@@ -36,6 +37,7 @@ export function useAutoPilot(): void {
       try {
         const { settings, streak, reminderPresets } = useAppStore.getState();
         if (!settings.autoPilot.enabled) return;
+        if (isShabbatOrYomTov()) return;
 
         const today = toDateKey();
         if (streak.lastDonationDate === today) return;
