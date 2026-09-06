@@ -10,6 +10,21 @@ import * as Notifications from 'expo-notifications';
 import type { ReminderSlot, Settings } from '@/types';
 import { formatCurrency } from '@/utils/format';
 
+/** A weekday-scoped slot (e.g. "ערב שבת") fires only that day; everything
+ *  else fires every day, same as before weekday support existed. */
+function triggerFor(slot: ReminderSlot): Notifications.SchedulableNotificationTriggerInput {
+  if (slot.weekday) {
+    return {
+      type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+      weekday: slot.weekday,
+      hour: slot.hour,
+      minute: slot.minute,
+    };
+  }
+
+  return { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: slot.hour, minute: slot.minute };
+}
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -55,7 +70,7 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
         body: `עוד לא נתתם היום (${slot.label}) - אל תשברו את הרצף.`,
         data: { slotId },
       },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: slot.hour, minute: slot.minute },
+      trigger: triggerFor(slot),
     });
   }
 
@@ -69,7 +84,7 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
           body: `${formatCurrency(settings.autoPilot.amount)} נתרמו מארנק החסד שלכם.`,
           data: { autoPilot: true },
         },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: slot.hour, minute: slot.minute },
+        trigger: triggerFor(slot),
       });
     }
   }

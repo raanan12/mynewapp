@@ -7,10 +7,22 @@ type SlotRow = {
   label: string;
   hour: number;
   minute: number;
+  weekday: number | null;
   sort_order: number;
 };
 
-const emptyDraft = { label: '', hour: 8, minute: 0 };
+const WEEKDAYS = [
+  { value: 0, label: 'כל יום' },
+  { value: 1, label: 'יום ראשון' },
+  { value: 2, label: 'יום שני' },
+  { value: 3, label: 'יום שלישי' },
+  { value: 4, label: 'יום רביעי' },
+  { value: 5, label: 'יום חמישי' },
+  { value: 6, label: 'יום שישי' },
+  { value: 7, label: 'שבת' },
+];
+
+const emptyDraft = { label: '', hour: 8, minute: 0, weekday: 0 };
 
 /**
  * Preset reminder/auto-pilot times shared by everyone - the app also lets
@@ -39,6 +51,7 @@ export function ReminderSlotsEditor() {
       label: draft.label.trim(),
       hour: draft.hour,
       minute: draft.minute,
+      weekday: draft.weekday || null,
       sort_order: rows.length + 1,
     });
 
@@ -52,14 +65,20 @@ export function ReminderSlotsEditor() {
     await load();
   }
 
-  function updateField(id: string, field: keyof SlotRow, value: string | number) {
+  function updateField(id: string, field: keyof SlotRow, value: string | number | null) {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
   }
 
   async function saveRow(row: SlotRow) {
     const { error: updateError } = await supabase
       .from('reminder_slots')
-      .update({ label: row.label, hour: row.hour, minute: row.minute, sort_order: row.sort_order })
+      .update({
+        label: row.label,
+        hour: row.hour,
+        minute: row.minute,
+        weekday: row.weekday || null,
+        sort_order: row.sort_order,
+      })
       .eq('id', row.id);
 
     if (updateError) {
@@ -89,7 +108,8 @@ export function ReminderSlotsEditor() {
       <div className="card">
         <p className="muted" style={{ marginTop: 0 }}>
           שעות אלה מוצעות לכל המשתמשים כתזכורת יומית וכשעה לטייס האוטומטי. הכיתוב הוא טקסט ההסבר, למשל
-          "8:00 - שחרית".
+          "8:00 - שחרית". "יום בשבוע" משאירים על "כל יום" לתזכורת שחוזרת יומית - למשל "ערב שבת" צריך להיות
+          מוגבל ליום שישי בלבד.
         </p>
         <div className="form-grid">
           <div>
@@ -115,6 +135,18 @@ export function ReminderSlotsEditor() {
               value={draft.minute}
               onChange={(event) => setDraft({ ...draft, minute: Number(event.target.value) })}
             />
+          </div>
+          <div>
+            <label>יום בשבוע</label>
+            <select
+              value={draft.weekday}
+              onChange={(event) => setDraft({ ...draft, weekday: Number(event.target.value) })}>
+              {WEEKDAYS.map((day) => (
+                <option key={day.value} value={day.value}>
+                  {day.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         {error ? <p className="error">{error}</p> : null}
@@ -150,6 +182,18 @@ export function ReminderSlotsEditor() {
                 value={row.minute}
                 onChange={(event) => updateField(row.id, 'minute', Number(event.target.value))}
               />
+            </div>
+            <div>
+              <label>יום בשבוע</label>
+              <select
+                value={row.weekday ?? 0}
+                onChange={(event) => updateField(row.id, 'weekday', Number(event.target.value))}>
+                {WEEKDAYS.map((day) => (
+                  <option key={day.value} value={day.value}>
+                    {day.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label>סדר תצוגה</label>

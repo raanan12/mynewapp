@@ -45,6 +45,9 @@ export function useAutoPilot(): void {
         if (!slot) return;
         const { hour, minute } = slot;
         const now = new Date();
+        // slot.weekday is 1-7/Sunday=1; Date#getDay() is 0-6/Sunday=0.
+        if (slot.weekday && now.getDay() + 1 !== slot.weekday) return;
+
         const dueAt = new Date();
         dueAt.setHours(hour, minute, 0, 0);
         if (now < dueAt) return;

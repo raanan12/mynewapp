@@ -296,8 +296,14 @@ create table if not exists public.reminder_slots (
   label text not null,
   hour integer not null default 8 check (hour between 0 and 23),
   minute integer not null default 0 check (minute between 0 and 59),
+  -- 1-7, Sunday=1 (matches expo-notifications' WEEKLY trigger); null means
+  -- "every day". "ערב שבת" is the reason this column exists - without it,
+  -- every slot fires daily regardless of its name.
+  weekday integer check (weekday between 1 and 7),
   sort_order integer not null default 0
 );
+
+alter table public.reminder_slots add column if not exists weekday integer check (weekday between 1 and 7);
 
 insert into public.reminder_slots (id, label, hour, minute, sort_order) values
   ('morning', 'בוקר (אחרי שחרית)', 8, 0, 1),
@@ -305,6 +311,11 @@ insert into public.reminder_slots (id, label, hour, minute, sort_order) values
   ('evening', 'ערב (לפני מעריב)', 19, 0, 3),
   ('preShabbat', 'ערב שבת', 14, 0, 4)
 on conflict (id) do nothing;
+
+-- Backfill for installs that already had this row before the weekday
+-- column existed - re-running this file must fix the existing "every
+-- day" preShabbat row, not just future inserts.
+update public.reminder_slots set weekday = 6 where id = 'preShabbat' and weekday is null;
 
 -- -------------------------------------------------------------- app_popup --
 -- Opening popup shown once per day on the giving screen when enabled.

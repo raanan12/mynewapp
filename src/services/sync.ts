@@ -173,7 +173,13 @@ export async function pullContent(): Promise<void> {
       ? { text: homeMessageRow.text, imageUrl: homeMessageRow.image_url }
       : current.homeMessage,
     reminderPresets: reminderSlotRows?.length
-      ? reminderSlotRows.map((row) => ({ id: row.id, label: row.label, hour: row.hour, minute: row.minute }))
+      ? reminderSlotRows.map((row) => ({
+          id: row.id,
+          label: row.label,
+          hour: row.hour,
+          minute: row.minute,
+          weekday: row.weekday ?? undefined,
+        }))
       : current.reminderPresets,
     appPopup: popupRow
       ? { enabled: popupRow.enabled, imageUrl: popupRow.image_url, linkUrl: popupRow.link_url }

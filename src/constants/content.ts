@@ -257,7 +257,7 @@ export const defaultReminderSlots: readonly ReminderSlot[] = [
   { id: 'morning', label: 'בוקר (אחרי שחרית)', hour: 8, minute: 0 },
   { id: 'afternoon', label: 'צהריים (מנחה)', hour: 13, minute: 30 },
   { id: 'evening', label: 'ערב (לפני מעריב)', hour: 19, minute: 0 },
-  { id: 'preShabbat', label: 'ערב שבת', hour: 14, minute: 0 },
+  { id: 'preShabbat', label: 'ערב שבת', hour: 14, minute: 0, weekday: 6 },
 ] as const;
 
 export type AppPopup = {

@@ -90,6 +90,9 @@ export type ReminderSlot = {
   label: string;
   hour: number;
   minute: number;
+  /** 1-7, Sunday=1 (matches expo-notifications' WEEKLY trigger) - fires
+   *  every day when unset, e.g. "ערב שבת" is weekday 6 (Friday), not daily. */
+  weekday?: number;
   isCustom?: boolean;
 };
 

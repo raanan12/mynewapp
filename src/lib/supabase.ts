@@ -157,6 +157,8 @@ export type ReminderSlotRow = {
   label: string;
   hour: number;
   minute: number;
+  /** 1-7, Sunday=1 - null means "every day". */
+  weekday: number | null;
   sort_order: number;
 };
 
