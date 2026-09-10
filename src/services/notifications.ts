@@ -6,11 +6,27 @@
  */
 
 import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 
 import { isShabbatOrYomTov } from '@/lib/jewish-calendar';
 import { useAppStore } from '@/store/app-store';
 import type { ReminderSlot, Settings } from '@/types';
 import { formatCurrency } from '@/utils/format';
+
+/**
+ * Android 8+ silently drops (or heavily downgrades) any notification that
+ * isn't tied to a channel - this was never created, which is very likely
+ * why sent pushes weren't showing up on Android at all. iOS has no
+ * concept of channels and ignores this.
+ */
+if (Platform.OS === 'android') {
+  void Notifications.setNotificationChannelAsync('default', {
+    name: 'התראות החסד היומי',
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: 'default',
+    vibrationPattern: [0, 250, 250, 250],
+  });
+}
 
 /** Substitutes `{token}` placeholders - the only templating these admin-
  *  edited push texts need. */
@@ -27,10 +43,16 @@ function triggerFor(slot: ReminderSlot): Notifications.SchedulableNotificationTr
       weekday: slot.weekday,
       hour: slot.hour,
       minute: slot.minute,
+      channelId: 'default',
     };
   }
 
-  return { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: slot.hour, minute: slot.minute };
+  return {
+    type: Notifications.SchedulableTriggerInputTypes.DAILY,
+    hour: slot.hour,
+    minute: slot.minute,
+    channelId: 'default',
+  };
 }
 
 Notifications.setNotificationHandler({

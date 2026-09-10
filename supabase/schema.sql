@@ -859,11 +859,15 @@ begin
     select * from public.push_notifications
     where sent_at is null and scheduled_at <= now()
   loop
+    -- `channelId` matters on Android only: without a matching client-side
+    -- channel (see notifications.ts) Android 8+ silently drops or mutes
+    -- notifications that don't reference one. iOS ignores this field.
     select coalesce(jsonb_agg(jsonb_build_object(
       'to', t.token,
       'title', v_notification.title,
       'body', v_notification.body,
-      'data', jsonb_build_object('url', v_notification.link_url)
+      'data', jsonb_build_object('url', v_notification.link_url),
+      'channelId', 'default'
     )), '[]'::jsonb)
     into v_messages
     from public.push_tokens t;

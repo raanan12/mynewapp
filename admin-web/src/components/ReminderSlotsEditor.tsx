@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
+import { NotificationPreview } from './NotificationPreview';
+
+function fillTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => vars[key] ?? match);
+}
 
 type SlotRow = {
   id: string;
@@ -33,6 +38,9 @@ export function ReminderSlotsEditor() {
   const [draft, setDraft] = useState(emptyDraft);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [pushTitle, setPushTitle] = useState('');
+  const [pushBody, setPushBody] = useState('');
 
   async function load() {
     const { data } = await supabase.from('reminder_slots').select('*').order('sort_order');
@@ -41,6 +49,15 @@ export function ReminderSlotsEditor() {
 
   useEffect(() => {
     void load();
+    void (async () => {
+      const { data } = await supabase
+        .from('app_texts')
+        .select('id, value')
+        .in('id', ['reminder_push_title', 'reminder_push_body']);
+      const byId = Object.fromEntries((data ?? []).map((row) => [row.id, row.value]));
+      setPushTitle(byId.reminder_push_title ?? '');
+      setPushBody(byId.reminder_push_body ?? '');
+    })();
   }, []);
 
   async function addSlot() {
@@ -208,10 +225,20 @@ export function ReminderSlotsEditor() {
             <button className="btn secondary" onClick={() => void saveRow(row)}>
               {savedId === row.id ? 'נשמר ✓' : 'שמירה'}
             </button>
+            <button
+              className="btn secondary"
+              onClick={() => setPreviewId((current) => (current === row.id ? null : row.id))}>
+              {previewId === row.id ? 'סגירת הדמיה' : 'הדמיה'}
+            </button>
             <button className="btn danger" onClick={() => void deleteSlot(row.id)}>
               מחיקה
             </button>
           </div>
+          {previewId === row.id ? (
+            <div style={{ marginTop: 10 }}>
+              <NotificationPreview title={pushTitle} body={fillTemplate(pushBody, { label: row.label })} />
+            </div>
+          ) : null}
         </div>
       ))}
     </div>
