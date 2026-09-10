@@ -239,6 +239,12 @@ insert into public.app_texts (id, value) values
   ('tab_icon_history', ''),
   ('tab_icon_trust', ''),
   ('tab_icon_settings', ''),
+  ('reminder_push_title', 'רגע של חסד'),
+  ('reminder_push_body', 'עוד לא נתתם היום ({label}) - אל תשברו את הרצף.'),
+  ('autopilot_push_title', 'הצדקה היומית בוצעה'),
+  ('autopilot_push_body', '{amount} נתרמו מארנק החסד שלכם.'),
+  ('donation_push_title', 'תודה על הנתינה'),
+  ('donation_push_body', '{amount} נכנסו לקופה. רצף של {streak} ימים.'),
   ('terms_version', '1.0')
 on conflict (id) do nothing;
 

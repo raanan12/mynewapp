@@ -8,8 +8,15 @@
 import * as Notifications from 'expo-notifications';
 
 import { isShabbatOrYomTov } from '@/lib/jewish-calendar';
+import { useAppStore } from '@/store/app-store';
 import type { ReminderSlot, Settings } from '@/types';
 import { formatCurrency } from '@/utils/format';
+
+/** Substitutes `{token}` placeholders - the only templating these admin-
+ *  edited push texts need. */
+function renderTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) => vars[key] ?? match);
+}
 
 /** A weekday-scoped slot (e.g. "ערב שבת") fires only that day; everything
  *  else fires every day, same as before weekday support existed. */
@@ -66,6 +73,7 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
   if (!(await requestPermission())) return false;
 
   const slotsById = new Map(allSlots.map((slot) => [slot.id, slot]));
+  const texts = useAppStore.getState().texts;
 
   for (const [slotId, enabled] of Object.entries(settings.reminders)) {
     if (!enabled) continue;
@@ -75,8 +83,8 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
     await Notifications.scheduleNotificationAsync({
       identifier: `reminder-${slotId}`,
       content: {
-        title: 'רגע של חסד',
-        body: `עוד לא נתתם היום (${slot.label}) - אל תשברו את הרצף.`,
+        title: texts.reminder_push_title,
+        body: renderTemplate(texts.reminder_push_body, { label: slot.label }),
         data: { slotId },
       },
       trigger: triggerFor(slot),
@@ -98,8 +106,10 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
       await Notifications.scheduleNotificationAsync({
         identifier: 'auto-pilot',
         content: {
-          title: 'הצדקה היומית בוצעה',
-          body: `${formatCurrency(settings.autoPilot.amount)} נתרמו מארנק החסד שלכם.`,
+          title: texts.autopilot_push_title,
+          body: renderTemplate(texts.autopilot_push_body, {
+            amount: formatCurrency(settings.autoPilot.amount),
+          }),
           data: { autoPilot: true },
         },
         trigger: triggerFor(slot),
@@ -113,10 +123,15 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
 /** One-off confirmation right after a donation completes. */
 export async function notifyDonationCompleted(amount: number, streak: number): Promise<void> {
   try {
+    const texts = useAppStore.getState().texts;
+
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'תודה על הנתינה',
-        body: `${formatCurrency(amount)} נכנסו לקופה. רצף של ${streak} ימים.`,
+        title: texts.donation_push_title,
+        body: renderTemplate(texts.donation_push_body, {
+          amount: formatCurrency(amount),
+          streak: String(streak),
+        }),
       },
       trigger: null,
     });

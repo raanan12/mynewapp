@@ -201,6 +201,14 @@ export const defaultTexts: Record<string, string> = {
   tab_icon_history: '',
   tab_icon_trust: '',
   tab_icon_settings: '',
+  /** Local notification texts - {label}/{amount}/{streak} are substituted
+   *  at send time, see renderTemplate in src/services/notifications.ts. */
+  reminder_push_title: 'רגע של חסד',
+  reminder_push_body: 'עוד לא נתתם היום ({label}) - אל תשברו את הרצף.',
+  autopilot_push_title: 'הצדקה היומית בוצעה',
+  autopilot_push_body: '{amount} נתרמו מארנק החסד שלכם.',
+  donation_push_title: 'תודה על הנתינה',
+  donation_push_body: '{amount} נכנסו לקופה. רצף של {streak} ימים.',
   /** Gates re-acceptance: bump this whenever a terms_sections paragraph
    *  changes materially, and every user - including ones who already
    *  accepted an older wording - is asked to accept again before their

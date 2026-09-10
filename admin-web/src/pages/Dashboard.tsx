@@ -8,6 +8,7 @@ import { CoinAmountsEditor } from '../components/CoinAmountsEditor';
 import { HomeMessageEditor } from '../components/HomeMessageEditor';
 import { PopupEditor } from '../components/PopupEditor';
 import { PushEditor } from '../components/PushEditor';
+import { PushTextsEditor } from '../components/PushTextsEditor';
 import { QuotesEditor } from '../components/QuotesEditor';
 import { ReminderSlotsEditor } from '../components/ReminderSlotsEditor';
 import { TabIconsEditor } from '../components/TabIconsEditor';
@@ -86,7 +87,12 @@ export function Dashboard({ onSignOut }: DashboardProps) {
         {tab === 'terms' ? <TermsEditor /> : null}
         {tab === 'home' ? <HomeMessageEditor /> : null}
         {tab === 'tabIcons' ? <TabIconsEditor /> : null}
-        {tab === 'reminders' ? <ReminderSlotsEditor /> : null}
+        {tab === 'reminders' ? (
+          <>
+            <ReminderSlotsEditor />
+            <PushTextsEditor />
+          </>
+        ) : null}
         {tab === 'popup' ? <PopupEditor /> : null}
         {tab === 'push' ? <PushEditor /> : null}
         {tab === 'trustLayout' ? <TrustSectionsEditor /> : null}

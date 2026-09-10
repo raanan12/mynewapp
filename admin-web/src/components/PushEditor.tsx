@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
+import { NotificationPreview } from './NotificationPreview';
 
 type PushRow = {
   id: string;
@@ -94,6 +95,10 @@ export function PushEditor() {
             value={draft.scheduledAt}
             onChange={(event) => setDraft({ ...draft, scheduledAt: event.target.value })}
           />
+        </div>
+        <div className="field">
+          <label>תצוגה מקדימה</label>
+          <NotificationPreview title={draft.title} body={draft.body} />
         </div>
         {error ? <p className="error">{error}</p> : null}
         <button className="btn" onClick={() => void send()}>
