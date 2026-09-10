@@ -14,7 +14,46 @@ import { useAllReminderSlots, useAppStore, useCategories, useCoinAmounts } from 
 import type { CategoryId } from '@/types';
 import { formatCurrency, formatTime } from '@/utils/format';
 
-const MINUTE_OPTIONS = [0, 15, 30, 45];
+function clamp(value: string, max: number): number {
+  return Math.max(0, Math.min(max, Number(value) || 0));
+}
+
+type TimePickerProps = {
+  hour: string;
+  minute: string;
+  onHourChange: (text: string) => void;
+  onMinuteChange: (text: string) => void;
+  borderColor: string;
+  textColor: string;
+};
+
+/** A free hour+minute entry, styled to actually read as a clock rather
+ *  than two generic text boxes. */
+function TimePicker({ hour, minute, onHourChange, onMinuteChange, borderColor, textColor }: TimePickerProps) {
+  return (
+    <View style={[styles.timePickerBox, { borderColor }]}>
+      <TextInput
+        value={hour}
+        onChangeText={onHourChange}
+        keyboardType="number-pad"
+        maxLength={2}
+        placeholder="00"
+        placeholderTextColor={palette.taupe}
+        style={[styles.timeDigits, { color: textColor }]}
+      />
+      <Text style={[styles.timeColon, { color: textColor }]}>:</Text>
+      <TextInput
+        value={minute}
+        onChangeText={onMinuteChange}
+        keyboardType="number-pad"
+        maxLength={2}
+        placeholder="00"
+        placeholderTextColor={palette.taupe}
+        style={[styles.timeDigits, { color: textColor }]}
+      />
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -29,10 +68,10 @@ export default function SettingsScreen() {
 
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [customHour, setCustomHour] = useState('20');
-  const [customMinute, setCustomMinute] = useState(0);
+  const [customMinute, setCustomMinute] = useState('00');
   const [customLabel, setCustomLabel] = useState('');
   const [apHour, setApHour] = useState(String(settings.autoPilot.customHour ?? 20));
-  const [apMinute, setApMinute] = useState(settings.autoPilot.customMinute ?? 0);
+  const [apMinute, setApMinute] = useState(String(settings.autoPilot.customMinute ?? 0).padStart(2, '0'));
   const [apAmountText, setApAmountText] = useState(String(settings.autoPilot.amount));
 
   // Any change to reminders or auto-pilot rebuilds the whole local schedule.
@@ -52,9 +91,10 @@ export default function SettingsScreen() {
   }
 
   function addCustomReminder() {
-    const hour = Math.max(0, Math.min(23, Number(customHour) || 0));
+    const hour = clamp(customHour, 23);
+    const minute = clamp(customMinute, 59);
     const id = `custom-${Date.now().toString(36)}`;
-    const slot = { id, label: customLabel.trim() || 'תזכורת אישית', hour, minute: customMinute, isCustom: true };
+    const slot = { id, label: customLabel.trim() || 'תזכורת אישית', hour, minute, isCustom: true };
 
     updateSettings({
       customReminders: [...(settings.customReminders ?? []), slot],
@@ -76,10 +116,14 @@ export default function SettingsScreen() {
     if (amount > 0) updateSettings({ autoPilot: { ...settings.autoPilot, amount } });
   }
 
-  function setAutoPilotCustomTime() {
-    const hour = Math.max(0, Math.min(23, Number(apHour) || 0));
+  function setAutoPilotCustomTime(nextHour: string, nextMinute: string) {
     updateSettings({
-      autoPilot: { ...settings.autoPilot, slotId: 'custom', customHour: hour, customMinute: apMinute },
+      autoPilot: {
+        ...settings.autoPilot,
+        slotId: 'custom',
+        customHour: clamp(nextHour, 23),
+        customMinute: clamp(nextMinute, 59),
+      },
     });
   }
 
@@ -144,34 +188,14 @@ export default function SettingsScreen() {
             />
 
             <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>שעה</Text>
-            <View style={styles.customRow}>
-              <TextInput
-                value={customHour}
-                onChangeText={setCustomHour}
-                keyboardType="number-pad"
-                maxLength={2}
-                placeholder="00-23"
-                placeholderTextColor={colors.textMuted}
-                style={[styles.hourInput, { color: colors.text, borderColor: colors.border }]}
-              />
-              <Text style={[styles.timeSeparator, { color: colors.textMuted }]}>:</Text>
-              <View style={styles.optionRow}>
-                {MINUTE_OPTIONS.map((minute) => (
-                  <Pressable
-                    key={minute}
-                    onPress={() => setCustomMinute(minute)}
-                    style={[
-                      styles.option,
-                      {
-                        borderColor: customMinute === minute ? palette.gold : colors.border,
-                        backgroundColor: customMinute === minute ? 'rgba(197,160,89,0.14)' : 'transparent',
-                      },
-                    ]}>
-                    <Text style={[styles.optionText, { color: colors.text }]}>{String(minute).padStart(2, '0')}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
+            <TimePicker
+              hour={customHour}
+              minute={customMinute}
+              onHourChange={setCustomHour}
+              onMinuteChange={setCustomMinute}
+              borderColor={palette.gold}
+              textColor={colors.text}
+            />
 
             <Pressable
               onPress={addCustomReminder}
@@ -287,7 +311,7 @@ export default function SettingsScreen() {
                   </Pressable>
                 ))}
                 <Pressable
-                  onPress={setAutoPilotCustomTime}
+                  onPress={() => setAutoPilotCustomTime(apHour, apMinute)}
                   style={[
                     styles.option,
                     {
@@ -301,52 +325,20 @@ export default function SettingsScreen() {
               </View>
 
               {settings.autoPilot.slotId === 'custom' ? (
-                <View style={styles.customRow}>
-                  <TextInput
-                    value={apHour}
-                    onChangeText={(text) => {
-                      setApHour(text);
-                      const hour = Math.max(0, Math.min(23, Number(text) || 0));
-                      updateSettings({
-                        autoPilot: { ...settings.autoPilot, slotId: 'custom', customHour: hour, customMinute: apMinute },
-                      });
-                    }}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    placeholder="00-23"
-                    placeholderTextColor={colors.textMuted}
-                    style={[styles.hourInput, { color: colors.text, borderColor: colors.border }]}
-                  />
-                  <Text style={[styles.timeSeparator, { color: colors.textMuted }]}>:</Text>
-                  <View style={styles.optionRow}>
-                    {MINUTE_OPTIONS.map((minute) => (
-                      <Pressable
-                        key={minute}
-                        onPress={() => {
-                          setApMinute(minute);
-                          updateSettings({
-                            autoPilot: {
-                              ...settings.autoPilot,
-                              slotId: 'custom',
-                              customHour: Math.max(0, Math.min(23, Number(apHour) || 0)),
-                              customMinute: minute,
-                            },
-                          });
-                        }}
-                        style={[
-                          styles.option,
-                          {
-                            borderColor: apMinute === minute ? palette.gold : colors.border,
-                            backgroundColor: apMinute === minute ? 'rgba(197,160,89,0.14)' : 'transparent',
-                          },
-                        ]}>
-                        <Text style={[styles.optionText, { color: colors.text }]}>
-                          {String(minute).padStart(2, '0')}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                </View>
+                <TimePicker
+                  hour={apHour}
+                  minute={apMinute}
+                  onHourChange={(text) => {
+                    setApHour(text);
+                    setAutoPilotCustomTime(text, apMinute);
+                  }}
+                  onMinuteChange={(text) => {
+                    setApMinute(text);
+                    setAutoPilotCustomTime(apHour, text);
+                  }}
+                  borderColor={palette.gold}
+                  textColor={colors.text}
+                />
               ) : null}
 
               {!card ? (
@@ -462,9 +454,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  timeSeparator: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
+  timePickerBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    gap: spacing.xs,
+    borderWidth: 1.5,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  timeDigits: {
+    width: 48,
+    fontSize: fontSize.xl,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  timeColon: {
+    fontSize: fontSize.xl,
+    fontWeight: '800',
   },
   hourInput: {
     width: 56,
