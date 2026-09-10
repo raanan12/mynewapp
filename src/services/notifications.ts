@@ -84,7 +84,16 @@ export async function syncSchedule(settings: Settings, allSlots: ReminderSlot[])
   }
 
   if (settings.autoPilot.enabled) {
-    const slot = slotsById.get(settings.autoPilot.slotId);
+    const slot =
+      settings.autoPilot.slotId === 'custom'
+        ? {
+            id: 'custom',
+            label: 'שעה חופשית',
+            hour: settings.autoPilot.customHour ?? 20,
+            minute: settings.autoPilot.customMinute ?? 0,
+          }
+        : slotsById.get(settings.autoPilot.slotId);
+
     if (slot) {
       await Notifications.scheduleNotificationAsync({
         identifier: 'auto-pilot',

@@ -116,11 +116,16 @@ export type TrustSection = {
   body?: string | null;
 };
 
+/** `slotId: 'custom'` means "use customHour/customMinute below" instead of
+ *  looking up a preset/reminder slot - lets a user pick a free time for
+ *  auto-pilot without having to also create a matching reminder slot. */
 export type AutoPilotSettings = {
   enabled: boolean;
   amount: number;
   categoryId: CategoryId;
   slotId: string;
+  customHour?: number;
+  customMinute?: number;
 };
 
 export type Settings = {

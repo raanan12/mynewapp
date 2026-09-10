@@ -42,13 +42,25 @@ export function useAutoPilot(): void {
         const today = toDateKey();
         if (streak.lastDonationDate === today) return;
 
-        const allSlots = [...reminderPresets, ...(settings.customReminders ?? [])];
-        const slot = allSlots.find((candidate) => candidate.id === settings.autoPilot.slotId);
-        if (!slot) return;
-        const { hour, minute } = slot;
+        let hour: number;
+        let minute: number;
+        let weekday: number | undefined;
+
+        if (settings.autoPilot.slotId === 'custom') {
+          hour = settings.autoPilot.customHour ?? 20;
+          minute = settings.autoPilot.customMinute ?? 0;
+        } else {
+          const allSlots = [...reminderPresets, ...(settings.customReminders ?? [])];
+          const slot = allSlots.find((candidate) => candidate.id === settings.autoPilot.slotId);
+          if (!slot) return;
+          hour = slot.hour;
+          minute = slot.minute;
+          weekday = slot.weekday;
+        }
+
         const now = new Date();
-        // slot.weekday is 1-7/Sunday=1; Date#getDay() is 0-6/Sunday=0.
-        if (slot.weekday && now.getDay() + 1 !== slot.weekday) return;
+        // weekday is 1-7/Sunday=1; Date#getDay() is 0-6/Sunday=0.
+        if (weekday && now.getDay() + 1 !== weekday) return;
 
         const dueAt = new Date();
         dueAt.setHours(hour, minute, 0, 0);

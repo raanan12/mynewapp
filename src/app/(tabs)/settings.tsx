@@ -31,6 +31,9 @@ export default function SettingsScreen() {
   const [customHour, setCustomHour] = useState('20');
   const [customMinute, setCustomMinute] = useState(0);
   const [customLabel, setCustomLabel] = useState('');
+  const [apHour, setApHour] = useState(String(settings.autoPilot.customHour ?? 20));
+  const [apMinute, setApMinute] = useState(settings.autoPilot.customMinute ?? 0);
+  const [apAmountText, setApAmountText] = useState(String(settings.autoPilot.amount));
 
   // Any change to reminders or auto-pilot rebuilds the whole local schedule.
   useEffect(() => {
@@ -64,6 +67,19 @@ export default function SettingsScreen() {
     updateSettings({
       customReminders: (settings.customReminders ?? []).filter((slot) => slot.id !== id),
       reminders: { ...settings.reminders, [id]: false },
+    });
+  }
+
+  function setAutoPilotAmount(text: string) {
+    setApAmountText(text);
+    const amount = Math.max(1, Math.min(AUTO_PILOT_MAX_AMOUNT, Number(text) || 0));
+    if (amount > 0) updateSettings({ autoPilot: { ...settings.autoPilot, amount } });
+  }
+
+  function setAutoPilotCustomTime() {
+    const hour = Math.max(0, Math.min(23, Number(apHour) || 0));
+    updateSettings({
+      autoPilot: { ...settings.autoPilot, slotId: 'custom', customHour: hour, customMinute: apMinute },
     });
   }
 
@@ -108,18 +124,37 @@ export default function SettingsScreen() {
             </View>
           ))}
 
-          <View style={[styles.customForm, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}>
-            <Text style={[styles.label, { color: colors.textMuted, marginTop: 0 }]}>הוספת תזכורת בשעה חופשית</Text>
+          <View
+            style={[
+              styles.customBox,
+              { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+            ]}>
+            <Text style={[styles.customBoxTitle, { color: colors.text }]}>הוספת תזכורת בזמן משלכם</Text>
+            <Text style={[styles.customBoxHint, { color: colors.textMuted }]}>
+              לא מוצא שעה מתאימה למעלה? קבעו שעה משלכם - שם, שעה ודקה, ואז לחצו &quot;הוספה&quot;.
+            </Text>
+
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>שם התזכורת (אופציונלי)</Text>
+            <TextInput
+              value={customLabel}
+              onChangeText={setCustomLabel}
+              placeholder="לדוגמה: לפני השינה"
+              placeholderTextColor={colors.textMuted}
+              style={[styles.labelInput, { color: colors.text, borderColor: colors.border }]}
+            />
+
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>שעה</Text>
             <View style={styles.customRow}>
               <TextInput
                 value={customHour}
                 onChangeText={setCustomHour}
                 keyboardType="number-pad"
                 maxLength={2}
-                placeholder="שעה"
+                placeholder="00-23"
                 placeholderTextColor={colors.textMuted}
                 style={[styles.hourInput, { color: colors.text, borderColor: colors.border }]}
               />
+              <Text style={[styles.timeSeparator, { color: colors.textMuted }]}>:</Text>
               <View style={styles.optionRow}>
                 {MINUTE_OPTIONS.map((minute) => (
                   <Pressable
@@ -137,19 +172,13 @@ export default function SettingsScreen() {
                 ))}
               </View>
             </View>
-            <TextInput
-              value={customLabel}
-              onChangeText={setCustomLabel}
-              placeholder="כיתוב אישי (אופציונלי)"
-              placeholderTextColor={colors.textMuted}
-              style={[styles.labelInput, { color: colors.text, borderColor: colors.border }]}
-            />
+
             <Pressable
               onPress={addCustomReminder}
               style={[styles.addButton, { borderColor: palette.gold }]}
               accessibilityRole="button">
               <Plus size={16} color={palette.gold} strokeWidth={1.75} />
-              <Text style={[styles.addButtonText, { color: palette.gold }]}>הוספה</Text>
+              <Text style={[styles.addButtonText, { color: palette.gold }]}>הוספת התזכורת</Text>
             </Pressable>
           </View>
         </Card>
@@ -158,7 +187,7 @@ export default function SettingsScreen() {
         <Card>
           <View style={styles.row}>
             <View style={styles.rowText}>
-              <Text style={[styles.rowTitle, { color: colors.text }]}>טייס אוטומטי</Text>
+              <Text style={[styles.rowTitle, { color: colors.text }]}>צדקה ללא לחיצה</Text>
               <Text style={[styles.rowMeta, { color: colors.textMuted }]}>
                 תרומה יומית שמחויבת אוטומטית מהכרטיס השמור בשעה שנקבעה.
               </Text>
@@ -197,6 +226,19 @@ export default function SettingsScreen() {
                     </Text>
                   </Pressable>
                 ))}
+              </View>
+              <View style={styles.customRow}>
+                <Text style={[styles.fieldLabel, { color: colors.textMuted, marginTop: 0 }]}>או סכום חופשי:</Text>
+                <TextInput
+                  value={apAmountText}
+                  onChangeText={setAutoPilotAmount}
+                  keyboardType="number-pad"
+                  maxLength={3}
+                  placeholder={`1-${AUTO_PILOT_MAX_AMOUNT}`}
+                  placeholderTextColor={colors.textMuted}
+                  style={[styles.hourInput, { color: colors.text, borderColor: colors.border }]}
+                />
+                <Text style={[styles.fieldLabel, { color: colors.textMuted, marginTop: 0 }]}>₪</Text>
               </View>
 
               <Text style={[styles.label, { color: colors.textMuted }]}>ייעוד</Text>
@@ -244,7 +286,68 @@ export default function SettingsScreen() {
                     </Text>
                   </Pressable>
                 ))}
+                <Pressable
+                  onPress={setAutoPilotCustomTime}
+                  style={[
+                    styles.option,
+                    {
+                      borderColor: settings.autoPilot.slotId === 'custom' ? palette.gold : colors.border,
+                      backgroundColor:
+                        settings.autoPilot.slotId === 'custom' ? 'rgba(197,160,89,0.14)' : 'transparent',
+                    },
+                  ]}>
+                  <Text style={[styles.optionText, { color: colors.text }]}>שעה חופשית</Text>
+                </Pressable>
               </View>
+
+              {settings.autoPilot.slotId === 'custom' ? (
+                <View style={styles.customRow}>
+                  <TextInput
+                    value={apHour}
+                    onChangeText={(text) => {
+                      setApHour(text);
+                      const hour = Math.max(0, Math.min(23, Number(text) || 0));
+                      updateSettings({
+                        autoPilot: { ...settings.autoPilot, slotId: 'custom', customHour: hour, customMinute: apMinute },
+                      });
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    placeholder="00-23"
+                    placeholderTextColor={colors.textMuted}
+                    style={[styles.hourInput, { color: colors.text, borderColor: colors.border }]}
+                  />
+                  <Text style={[styles.timeSeparator, { color: colors.textMuted }]}>:</Text>
+                  <View style={styles.optionRow}>
+                    {MINUTE_OPTIONS.map((minute) => (
+                      <Pressable
+                        key={minute}
+                        onPress={() => {
+                          setApMinute(minute);
+                          updateSettings({
+                            autoPilot: {
+                              ...settings.autoPilot,
+                              slotId: 'custom',
+                              customHour: Math.max(0, Math.min(23, Number(apHour) || 0)),
+                              customMinute: minute,
+                            },
+                          });
+                        }}
+                        style={[
+                          styles.option,
+                          {
+                            borderColor: apMinute === minute ? palette.gold : colors.border,
+                            backgroundColor: apMinute === minute ? 'rgba(197,160,89,0.14)' : 'transparent',
+                          },
+                        ]}>
+                        <Text style={[styles.optionText, { color: colors.text }]}>
+                          {String(minute).padStart(2, '0')}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              ) : null}
 
               {!card ? (
                 <Text style={[styles.rowMeta, { color: colors.danger }]}>
@@ -332,14 +435,36 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 2,
   },
-  customForm: {
+  customBox: {
     padding: spacing.md,
-    gap: spacing.sm,
+    gap: spacing.xs,
+    backgroundColor: 'rgba(197,160,89,0.06)',
+  },
+  customBoxTitle: {
+    fontSize: fontSize.sm,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  customBoxHint: {
+    fontSize: fontSize.xs,
+    lineHeight: 18,
+    textAlign: 'right',
+    marginBottom: spacing.xs,
+  },
+  fieldLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+    textAlign: 'right',
+    marginTop: spacing.sm,
   },
   customRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  timeSeparator: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
   },
   hourInput: {
     width: 56,
@@ -366,6 +491,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.pill,
     paddingVertical: spacing.xs + 2,
+    marginTop: spacing.sm,
   },
   addButtonText: {
     fontSize: fontSize.sm,
