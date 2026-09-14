@@ -59,15 +59,21 @@ export default function HistoryScreen() {
                 <Text style={[styles.statValue, { color: colors.text }]}>
                   {formatCurrency(totals.total)}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>{totalLabel}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]} numberOfLines={2}>
+                  {totalLabel}
+                </Text>
               </Card>
               <Card style={styles.stat}>
                 <Text style={[styles.statValue, { color: colors.text }]}>{totals.count}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>{donationsLabel}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]} numberOfLines={2}>
+                  {donationsLabel}
+                </Text>
               </Card>
               <Card style={styles.stat}>
                 <Text style={[styles.statValue, { color: colors.text }]}>{streak.longest}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>{streakLabel}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]} numberOfLines={2}>
+                  {streakLabel}
+                </Text>
               </Card>
             </View>
 
@@ -156,13 +162,22 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1,
     alignItems: 'center',
+    // Rows sit side by side (flexDirection: 'row'), which in RN does not
+    // stretch siblings to a shared height - a label that wraps to 2 lines
+    // (e.g. "רצף התרומות הארוך ביותר") would otherwise make its card
+    // taller than its neighbors.
+    justifyContent: 'center',
   },
   statValue: {
     fontSize: fontSize.md,
     fontWeight: '900',
+    textAlign: 'center',
   },
   statLabel: {
     fontSize: fontSize.xs,
+    lineHeight: 14,
+    // Fixed to exactly 2 lines' worth of space, same reasoning as above.
+    height: 28,
     marginTop: 2,
     textAlign: 'center',
   },
