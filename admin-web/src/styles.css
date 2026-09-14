@@ -141,29 +141,58 @@ select {
   margin: 0;
 }
 
-.tabs {
+.layout {
+  flex: 1;
   display: flex;
-  gap: 4px;
-  padding: 0 24px;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
+  align-items: flex-start;
+  min-height: 0;
 }
 
-.tab {
-  padding: 14px 16px;
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #fff;
+  border-left: 1px solid var(--border);
+  padding: 16px 0;
+  overflow-y: auto;
+  align-self: stretch;
+}
+
+.nav-group {
+  margin-bottom: 18px;
+}
+
+.nav-group-title {
+  padding: 0 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--stone);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.nav-item {
+  display: block;
+  width: 100%;
+  text-align: right;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--stone);
+  color: var(--charcoal);
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
-  white-space: nowrap;
+  border-right: 3px solid transparent;
 }
 
-.tab.active {
+.nav-item:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.nav-item.active {
   color: var(--navy);
-  border-bottom-color: var(--gold);
+  background: rgba(212, 175, 55, 0.14);
+  border-right-color: var(--gold);
 }
 
 .content {
