@@ -91,7 +91,12 @@ export default function TrustScreen() {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.gallery}>
           {approvals.map((approval) => (
-            <Pressable key={approval.id} onPress={() => setPreview(approval)}>
+            <Pressable
+              key={approval.id}
+              onPress={() => {
+                setPreview(approval);
+                setPreviewVideo(Boolean(approval.videoUrl));
+              }}>
               <Card padded={false} elevated style={styles.approvalCard}>
                 <Image
                   source={{ uri: approval.imageUrl }}
