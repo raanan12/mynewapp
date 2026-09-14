@@ -1,14 +1,15 @@
 import { Image } from 'expo-image';
-import * as WebBrowser from 'expo-web-browser';
-import { Award, ExternalLink, PlayCircle } from 'lucide-react-native';
+import { Award, ExternalLink, PlayCircle, X } from 'lucide-react-native';
 import { useState, type ReactNode } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { ZoomableImage } from '@/components/zoomable-image';
 import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { toEmbedUrl } from '@/lib/video-embed';
 import {
   useApprovals,
   useAppText,
@@ -76,7 +77,13 @@ export default function TrustScreen() {
   const logoUrl = useAppText('trust_logo_url');
   const sections = useTrustSections();
   const [preview, setPreview] = useState<RabbinicalApproval | null>(null);
+  const [previewVideo, setPreviewVideo] = useState(false);
   const [expandedCharity, setExpandedCharity] = useState<string | null>(null);
+
+  function closePreview() {
+    setPreview(null);
+    setPreviewVideo(false);
+  }
 
   function renderApprovals(title: string) {
     return (
@@ -109,7 +116,10 @@ export default function TrustScreen() {
                     {approval.videoUrl ? (
                       <Pressable
                         accessibilityRole="button"
-                        onPress={() => approval.videoUrl && void WebBrowser.openBrowserAsync(approval.videoUrl)}>
+                        onPress={() => {
+                          setPreview(approval);
+                          setPreviewVideo(true);
+                        }}>
                         <PlayCircle size={16} color={colors.accent} strokeWidth={1.75} />
                       </Pressable>
                     ) : null}
@@ -250,30 +260,41 @@ export default function TrustScreen() {
         )}
       </ScrollView>
 
-      <Modal visible={preview !== null} transparent animationType="fade" onRequestClose={() => setPreview(null)}>
-        <View style={styles.previewBackdrop}>
+      <Modal visible={preview !== null} transparent animationType="fade" onRequestClose={closePreview}>
+        {/* Tapping anywhere on this backdrop closes the preview - the
+         *  content box below is its own Pressable specifically so a tap
+         *  landing on it (rather than the surrounding black area) does not
+         *  bubble up and close it too. */}
+        <Pressable style={styles.previewBackdrop} onPress={closePreview}>
           {preview ? (
             <>
-              <ZoomableImage uri={preview.imageUrl} style={styles.previewImage} />
+              <Pressable style={styles.previewContent} onPress={() => {}}>
+                {previewVideo && preview.videoUrl ? (
+                  <WebView source={{ uri: toEmbedUrl(preview.videoUrl) }} style={styles.previewVideo} />
+                ) : (
+                  <ZoomableImage uri={preview.imageUrl} style={styles.previewImage} />
+                )}
+              </Pressable>
+
               <Text style={styles.previewCaption}>{preview.rabbiName}</Text>
+
               {preview.videoUrl ? (
-                <Pressable
-                  style={styles.previewVideoButton}
-                  onPress={() => preview.videoUrl && void WebBrowser.openBrowserAsync(preview.videoUrl)}>
+                <Pressable style={styles.previewVideoButton} onPress={() => setPreviewVideo((current) => !current)}>
                   <PlayCircle size={18} color={palette.cream} strokeWidth={1.75} />
-                  <Text style={styles.previewCaption}>צפייה בברכה</Text>
+                  <Text style={styles.previewCaption}>{previewVideo ? 'חזרה למכתב' : 'צפייה בברכה'}</Text>
                 </Pressable>
               ) : null}
+
               <Pressable
                 style={styles.previewCloseButton}
-                onPress={() => setPreview(null)}
+                onPress={closePreview}
                 accessibilityRole="button"
                 accessibilityLabel="סגירה">
-                <Text style={styles.previewCaption}>סגירה ✕</Text>
+                <X size={22} color={palette.cream} strokeWidth={2} />
               </Pressable>
             </>
           ) : null}
-        </View>
+        </Pressable>
       </Modal>
     </Screen>
   );
@@ -459,9 +480,18 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
   },
-  previewImage: {
+  previewContent: {
     width: '100%',
     height: '80%',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  previewVideo: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
   },
   previewCaption: {
     color: palette.cream,
