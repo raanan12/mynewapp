@@ -1,5 +1,5 @@
 import { FileText, Gift, Heart, Zap } from 'lucide-react-native';
-import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { StreakBadge } from '@/components/streak-badge';
@@ -121,7 +121,9 @@ export default function HistoryScreen() {
 
             <Pressable
               accessibilityRole="button"
-              onPress={() => void shareReceipt(item).catch(() => {})}
+              onPress={() =>
+                void shareReceipt(item).catch(() => Alert.alert('שגיאה', 'לא ניתן היה לפתוח את הקבלה.'))
+              }
               style={[styles.receipt, { borderColor: colors.border }]}>
               <FileText size={14} color={colors.textMuted} strokeWidth={1.75} />
               <Text style={[styles.receiptText, { color: colors.textMuted }]}>קבלה סעיף 46</Text>

@@ -1,15 +1,15 @@
 /**
  * Clause 46 (סעיף 46) tax-deductible receipts.
  *
- * In production Kesher issues the official receipt and returns a hosted PDF
- * URL. Until credentials are wired in (or when a receipt needs to be re-issued
- * offline) we render an RTL HTML receipt locally with expo-print.
+ * Kesher issues the official receipt and emails it to the donor directly at
+ * charge time (see `kesher-charge`'s `DocumentsDetails.DocumentDetails[0]
+ * .PdfLink` handling) - that email is the real tax document, always. This
+ * file must never fabricate a look-alike and present it as if it were one.
  */
 
 import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
+import { Alert, Linking } from 'react-native';
 
-import { kesher } from '@/services/kesher';
 import { appText, categoryLabel } from '@/store/app-store';
 import type { Donation } from '@/types';
 import { formatCurrency, formatDateTime } from '@/utils/format';
@@ -83,27 +83,20 @@ export async function generateReceipt(donation: Donation): Promise<string> {
   return uri;
 }
 
-export async function shareReceipt(donation: Donation): Promise<void> {
-  const uri = await generateReceipt(donation);
-  if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
-  }
-}
-
 /**
- * Prefers the official Kesher receipt when the donation carries a live
- * transaction id, and falls back to the locally rendered PDF.
+ * Opens the real Kesher receipt when one exists for this donation. When it
+ * doesn't (Kesher didn't issue one for that charge), this must NOT fall
+ * back to fabricating a look-alike - it tells the donor the truth instead:
+ * the official receipt already went out by email at charge time.
  */
-export async function resolveReceiptUrl(donation: Donation): Promise<string> {
-  if (donation.receiptUrl && !donation.receiptUrl.startsWith('local://')) {
-    return donation.receiptUrl;
+export async function shareReceipt(donation: Donation): Promise<void> {
+  if (donation.receiptUrl?.startsWith('http')) {
+    await Linking.openURL(donation.receiptUrl);
+    return;
   }
 
-  if (donation.receiptUrl?.startsWith('local://')) {
-    const transactionId = donation.receiptUrl.replace('local://receipt/', '');
-    const hosted = await kesher.fetchReceiptUrl(transactionId).catch(() => null);
-    if (hosted && !hosted.startsWith('local://')) return hosted;
-  }
-
-  return generateReceipt(donation);
+  Alert.alert(
+    'הקבלה נשלחה במייל',
+    'הקבלה הרשמית לצורכי מס נשלחת אוטומטית על ידי חברת הסליקה בעת התרומה. בדקו את תיבת הדואר (כולל תיקיית הספאם); אם לא התקבלה, פנו לתמיכה.'
+  );
 }
