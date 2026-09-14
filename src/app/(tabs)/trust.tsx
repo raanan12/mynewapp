@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { ZoomableImage } from '@/components/zoomable-image';
 import { fontSize, palette, radius, spacing, TAB_BAR_CLEARANCE } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { toEmbedUrl } from '@/lib/video-embed';
+import { toEmbedUrl, toVideoThumbnailUrl } from '@/lib/video-embed';
 import {
   useApprovals,
   useAppText,
@@ -98,12 +98,21 @@ export default function TrustScreen() {
                 setPreviewVideo(Boolean(approval.videoUrl));
               }}>
               <Card padded={false} elevated style={styles.approvalCard}>
-                <Image
-                  source={{ uri: approval.imageUrl }}
-                  style={styles.approvalImage}
-                  contentFit="cover"
-                  transition={200}
-                />
+                <View style={styles.approvalImageWrap}>
+                  <Image
+                    source={{
+                      uri: (approval.videoUrl && toVideoThumbnailUrl(approval.videoUrl)) || approval.imageUrl,
+                    }}
+                    style={styles.approvalImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                  {approval.videoUrl ? (
+                    <View style={styles.approvalPlayBadge} pointerEvents="none">
+                      <PlayCircle size={28} color={palette.cream} strokeWidth={1.5} />
+                    </View>
+                  ) : null}
+                </View>
                 <View style={styles.approvalMeta}>
                   <View style={styles.approvalNameRow}>
                     {approval.rabbiPhotoUrl ? (
@@ -283,7 +292,9 @@ export default function TrustScreen() {
 
               <Text style={styles.previewCaption}>{preview.rabbiName}</Text>
 
-              {preview.videoUrl ? (
+              {/* Only worth a toggle when there's actually a letter to switch
+               *  back to - an approval with just a video has nothing else to show. */}
+              {preview.videoUrl && preview.imageUrl.trim() ? (
                 <Pressable style={styles.previewVideoButton} onPress={() => setPreviewVideo((current) => !current)}>
                   <PlayCircle size={18} color={palette.cream} strokeWidth={1.75} />
                   <Text style={styles.previewCaption}>{previewVideo ? 'חזרה למכתב' : 'צפייה בברכה'}</Text>
@@ -334,9 +345,23 @@ const styles = StyleSheet.create({
   approvalCard: {
     width: 168,
   },
-  approvalImage: {
+  approvalImageWrap: {
     width: '100%',
     height: 200,
+  },
+  approvalImage: {
+    width: '100%',
+    height: '100%',
+  },
+  approvalPlayBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(28,25,23,0.25)',
   },
   approvalMeta: {
     padding: spacing.sm,
