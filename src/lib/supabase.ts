@@ -107,6 +107,7 @@ export type ApprovalRow = {
   sort_order: number;
   rabbi_photo_url: string | null;
   video_url: string | null;
+  video_thumbnail_url: string | null;
 };
 
 export type WalletTransactionRow = {

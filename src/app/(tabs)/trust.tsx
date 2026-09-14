@@ -101,7 +101,10 @@ export default function TrustScreen() {
                 <View style={styles.approvalImageWrap}>
                   <Image
                     source={{
-                      uri: (approval.videoUrl && toVideoThumbnailUrl(approval.videoUrl)) || approval.imageUrl,
+                      uri:
+                        approval.videoThumbnailUrl ||
+                        (approval.videoUrl && toVideoThumbnailUrl(approval.videoUrl)) ||
+                        approval.imageUrl,
                     }}
                     style={styles.approvalImage}
                     contentFit="cover"

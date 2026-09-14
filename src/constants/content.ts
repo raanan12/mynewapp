@@ -134,6 +134,7 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
     year: 'תשפ״ה',
     rabbiPhotoUrl: null,
     videoUrl: null,
+    videoThumbnailUrl: null,
   },
   {
     id: 'a2',
@@ -143,6 +144,7 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
     year: 'תשפ״ד',
     rabbiPhotoUrl: null,
     videoUrl: null,
+    videoThumbnailUrl: null,
   },
   {
     id: 'a3',
@@ -152,6 +154,7 @@ export const defaultApprovals: readonly RabbinicalApproval[] = [
     year: 'תשפ״ד',
     rabbiPhotoUrl: null,
     videoUrl: null,
+    videoThumbnailUrl: null,
   },
 ] as const;
 

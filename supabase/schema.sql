@@ -188,11 +188,16 @@ create table if not exists public.approvals (
   year text not null default '',
   sort_order integer not null default 0,
   rabbi_photo_url text,
-  video_url text
+  video_url text,
+  -- Manual cover for the video - only YouTube links have a public
+  -- thumbnail API, so this is the fallback for everything else (Drive
+  -- links in particular).
+  video_thumbnail_url text
 );
 
 alter table public.approvals add column if not exists rabbi_photo_url text;
 alter table public.approvals add column if not exists video_url text;
+alter table public.approvals add column if not exists video_thumbnail_url text;
 
 insert into public.approvals (id, rabbi_name, title, image_url, year, sort_order) values
   ('a1', 'הרב יצחק זילברשטיין שליט״א', 'מכתב ברכה והסכמה לפעילות הארגון',

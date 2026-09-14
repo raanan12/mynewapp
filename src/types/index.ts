@@ -155,6 +155,10 @@ export type RabbinicalApproval = {
   rabbiPhotoUrl: string | null;
   /** Link to a video of the blessing, opened externally. */
   videoUrl: string | null;
+  /** Admin-uploaded cover for the video - only YouTube links have a public
+   *  thumbnail API, so this is the manual fallback for everything else
+   *  (Drive links in particular). */
+  videoThumbnailUrl: string | null;
 };
 
 /** Standard envelope for async UI state. */

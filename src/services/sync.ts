@@ -162,6 +162,7 @@ export async function pullContent(): Promise<void> {
           imageUrl: row.image_url,
           rabbiPhotoUrl: row.rabbi_photo_url,
           videoUrl: row.video_url,
+          videoThumbnailUrl: row.video_thumbnail_url,
           year: row.year,
         }))
       : current.approvals,

@@ -12,6 +12,7 @@ type ApprovalRow = {
   sort_order: number;
   rabbi_photo_url: string | null;
   video_url: string | null;
+  video_thumbnail_url: string | null;
 };
 
 const emptyDraft = { rabbiName: '', title: '', imageUrl: '', year: '' };
@@ -62,12 +63,18 @@ export function ApprovalsEditor() {
     setRows((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
   }
 
-  async function uploadFile(id: string, field: 'image_url' | 'rabbi_photo_url', file: File) {
+  async function uploadFile(
+    id: string,
+    field: 'image_url' | 'rabbi_photo_url' | 'video_thumbnail_url',
+    file: File
+  ) {
     setUploadingId(id);
     setError(null);
 
+    const folders = { image_url: 'approvals', rabbi_photo_url: 'rabbi-photos', video_thumbnail_url: 'video-thumbs' };
+
     try {
-      const url = await uploadAsset(file, field === 'image_url' ? 'approvals' : 'rabbi-photos');
+      const url = await uploadAsset(file, folders[field]);
       updateField(id, field, url);
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : 'העלאת הקובץ נכשלה.');
@@ -87,6 +94,7 @@ export function ApprovalsEditor() {
         sort_order: row.sort_order,
         rabbi_photo_url: row.rabbi_photo_url?.trim() || null,
         video_url: row.video_url?.trim() || null,
+        video_thumbnail_url: row.video_thumbnail_url?.trim() || null,
       })
       .eq('id', row.id);
 
@@ -229,6 +237,49 @@ export function ApprovalsEditor() {
               dir="ltr"
             />
           </div>
+
+          {row.video_url ? (
+            <div className="field">
+              <label>תמונת פתיחה לסרטון (אופציונלי)</label>
+              <p className="muted" style={{ marginTop: 0 }}>
+                ל-YouTube יש תמונת תצוגה אוטומטית; לקישורים מדרייב או ממקורות אחרים אין, אז מומלץ להעלות
+                תמונה כאן - אחרת יוצג המכתב במקום.
+              </p>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {row.video_thumbnail_url ? (
+                  <img
+                    src={row.video_thumbnail_url}
+                    alt=""
+                    style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
+                  />
+                ) : null}
+                <input
+                  style={{ flex: 1 }}
+                  value={row.video_thumbnail_url ?? ''}
+                  onChange={(event) => updateField(row.id, 'video_thumbnail_url', event.target.value)}
+                  dir="ltr"
+                />
+                <label className="btn secondary" style={{ cursor: 'pointer' }}>
+                  {uploadingId === row.id ? 'מעלה...' : 'העלאת קובץ'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) void uploadFile(row.id, 'video_thumbnail_url', file);
+                      event.target.value = '';
+                    }}
+                  />
+                </label>
+                {row.video_thumbnail_url ? (
+                  <button className="btn danger" onClick={() => void updateField(row.id, 'video_thumbnail_url', null)}>
+                    הסרה
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           {error ? <p className="error">{error}</p> : null}
 
